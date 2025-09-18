@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace GameStore.Application.DTOs;
 
 /// <summary>
@@ -18,7 +20,7 @@ public class RecensioneDto
     public DateTime? DataUltimaModifica { get; set; }
     
     // Proprietà di navigazione per visualizzazione
-    public string? UtenteNome { get; set; }
+    public string? UtenteUsername { get; set; }
     public string? GiocoTitolo { get; set; }
 }
 
@@ -27,13 +29,27 @@ public class RecensioneDto
 /// </summary>
 public class CreaRecensioneDto
 {
+    [Required(ErrorMessage = "L'ID utente è obbligatorio")]
     public Guid UtenteId { get; set; }
+
+    [Required(ErrorMessage = "L'ID gioco è obbligatorio")]
     public Guid GiocoId { get; set; }
+
+    [Required(ErrorMessage = "Il punteggio è obbligatorio")]
+    [Range(1, 5, ErrorMessage = "Il punteggio deve essere tra 1 e 5")]
     public int Punteggio { get; set; }
+
+    [StringLength(100, ErrorMessage = "Il titolo non può superare i 100 caratteri")]
     public string? Titolo { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Il corpo della recensione non può superare i 1000 caratteri")]
     public string? Corpo { get; set; }
+
+    [Required(ErrorMessage = "La data della recensione è obbligatoria")]
     public DateTime DataRecensione { get; set; } = DateTime.UtcNow;
+
     public bool IsRecensioneVerificata { get; set; } = false;
+
     public Guid? AcquistoId { get; set; }
 }
 
@@ -42,13 +58,29 @@ public class CreaRecensioneDto
 /// </summary>
 public class AggiornaRecensioneDto
 {
+    [Required(ErrorMessage = "L'ID è obbligatorio")]
     public Guid Id { get; set; }
+
+    [Required(ErrorMessage = "L'ID utente è obbligatorio")]
     public Guid UtenteId { get; set; }
+
+    [Required(ErrorMessage = "L'ID gioco è obbligatorio")]
     public Guid GiocoId { get; set; }
+
+    [Required(ErrorMessage = "Il punteggio è obbligatorio")]
+    [Range(1, 5, ErrorMessage = "Il punteggio deve essere tra 1 e 5")]
     public int Punteggio { get; set; }
+
+    [StringLength(100, ErrorMessage = "Il titolo non può superare i 100 caratteri")]
     public string? Titolo { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Il corpo della recensione non può superare i 1000 caratteri")]
     public string? Corpo { get; set; }
+
+    [Required(ErrorMessage = "La data della recensione è obbligatoria")]
     public DateTime DataRecensione { get; set; }
+
     public bool IsRecensioneVerificata { get; set; }
+
     public Guid? AcquistoId { get; set; }
 }

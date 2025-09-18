@@ -4,12 +4,15 @@ using GameStore.Application.DTOs;
 namespace GameStore.Application.Validators;
 
 /// <summary>
-/// Validatore per CreaGiocoDto
+/// Validatore per AggiornaGiocoDto
 /// </summary>
-public class CreaGiocoDtoValidator : AbstractValidator<CreaGiocoDto>
+public class AggiornaGiocoDtoValidator : AbstractValidator<AggiornaGiocoDto>
 {
-    public CreaGiocoDtoValidator()
+    public AggiornaGiocoDtoValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("L'ID è obbligatorio");
+
         RuleFor(x => x.Titolo)
             .NotEmpty().WithMessage("Il titolo è obbligatorio")
             .MaximumLength(200).WithMessage("Il titolo non può superare i 200 caratteri");

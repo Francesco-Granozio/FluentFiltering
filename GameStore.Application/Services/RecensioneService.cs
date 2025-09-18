@@ -1,0 +1,170 @@
+using AutoMapper;
+using GameStore.Application.Common;
+using GameStore.Application.DTOs;
+using GameStore.Domain.DTOs.Common;
+using GameStore.Domain.Interfaces;
+using GameStore.Domain.Entities;
+using Microsoft.Extensions.Logging;
+
+namespace GameStore.Application.Services;
+
+/// <summary>
+/// Implementazione del servizio per la gestione delle recensioni
+/// </summary>
+public class RecensioneService : IRecensioneService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private readonly ILogger<RecensioneService> _logger;
+
+    public RecensioneService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<RecensioneService> logger)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+        _logger = logger;
+    }
+
+    public async Task<Result<RecensioneDto>> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
+    {
+        var recensione = await _unitOfWork.Recensioni.GetByIdAsync(id, includeDeleted, cancellationToken);
+        if (recensione == null)
+        {
+            _logger.LogWarning("Recensione con ID {RecensioneId} non trovata.", id);
+            return Result<RecensioneDto>.Failure(Errors.Recensioni.NotFound);
+        }
+        return _mapper.Map<RecensioneDto>(recensione);
+    }
+
+    public async Task<Result<PagedResult<RecensioneDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
+    {
+        var pagedResult = await _unitOfWork.Recensioni.GetPagedAsync(request, cancellationToken: cancellationToken);
+        var dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(pagedResult.Items);
+
+        return new PagedResult<RecensioneDto>
+        {
+            Items = dtoList,
+            TotalItems = pagedResult.TotalItems,
+            PageNumber = pagedResult.PageNumber,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+    }
+
+    public async Task<Result<RecensioneDto>> CreateAsync(CreaRecensioneDto dto, CancellationToken cancellationToken = default)
+    {
+        // Verifica che l'utente esista
+        var utente = await _unitOfWork.Utenti.GetByIdAsync(dto.UtenteId, false, cancellationToken);
+        if (utente == null)
+        {
+            return Result<RecensioneDto>.Failure(Errors.Recensioni.UserNotFound);
+        }
+
+        // Verifica che il gioco esista
+        var gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.GiocoId, false, cancellationToken);
+        if (gioco == null)
+        {
+            return Result<RecensioneDto>.Failure(Errors.Recensioni.GameNotFound);
+        }
+
+        // Verifica che non esista già una recensione per questo utente e gioco
+        var existingRecensione = await _unitOfWork.Recensioni.GetByUtenteEGiocoAsync(dto.UtenteId, dto.GiocoId, false, cancellationToken);
+        if (existingRecensione != null)
+        {
+            return Result<RecensioneDto>.Failure(Errors.Recensioni.DuplicateReview);
+        }
+
+        // Verifica che l'acquisto esista se fornito
+        if (dto.AcquistoId.HasValue)
+        {
+            var acquisto = await _unitOfWork.Acquisti.GetByIdAsync(dto.AcquistoId.Value, false, cancellationToken);
+            if (acquisto == null)
+            {
+                return Result<RecensioneDto>.Failure(Errors.Recensioni.InvalidPurchase);
+            }
+        }
+
+        var recensione = _mapper.Map<Recensione>(dto);
+        await _unitOfWork.Recensioni.AddAsync(recensione, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        _logger.LogInformation("Recensione creata con ID {RecensioneId} per utente {UtenteId} e gioco {GiocoId}.", 
+            recensione.Id, recensione.UtenteId, recensione.GiocoId);
+        return _mapper.Map<RecensioneDto>(recensione);
+    }
+
+    public async Task<Result<RecensioneDto>> UpdateAsync(AggiornaRecensioneDto dto, CancellationToken cancellationToken = default)
+    {
+        var recensione = await _unitOfWork.Recensioni.GetByIdAsync(dto.Id, false, cancellationToken);
+        if (recensione == null)
+        {
+            _logger.LogWarning("Aggiornamento fallito: Recensione con ID {RecensioneId} non trovata.", dto.Id);
+            return Result<RecensioneDto>.Failure(Errors.Recensioni.NotFound);
+        }
+
+        // Verifica che l'utente esista se è stato cambiato
+        if (recensione.UtenteId != dto.UtenteId)
+        {
+            var utente = await _unitOfWork.Utenti.GetByIdAsync(dto.UtenteId, false, cancellationToken);
+            if (utente == null)
+            {
+                return Result<RecensioneDto>.Failure(Errors.Recensioni.UserNotFound);
+            }
+        }
+
+        // Verifica che il gioco esista se è stato cambiato
+        if (recensione.GiocoId != dto.GiocoId)
+        {
+            var gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.GiocoId, false, cancellationToken);
+            if (gioco == null)
+            {
+                return Result<RecensioneDto>.Failure(Errors.Recensioni.GameNotFound);
+            }
+        }
+
+        // Verifica che l'acquisto esista se fornito e cambiato
+        if (dto.AcquistoId.HasValue && recensione.AcquistoId != dto.AcquistoId)
+        {
+            var acquisto = await _unitOfWork.Acquisti.GetByIdAsync(dto.AcquistoId.Value, false, cancellationToken);
+            if (acquisto == null)
+            {
+                return Result<RecensioneDto>.Failure(Errors.Recensioni.InvalidPurchase);
+            }
+        }
+
+        _mapper.Map(dto, recensione);
+        _unitOfWork.Recensioni.Update(recensione);
+        await _unitOfWork.SaveChangesAsync();
+
+        _logger.LogInformation("Recensione con ID {RecensioneId} aggiornata.", recensione.Id);
+        return _mapper.Map<RecensioneDto>(recensione);
+    }
+
+    public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var recensione = await _unitOfWork.Recensioni.GetByIdAsync(id, false, cancellationToken);
+        if (recensione == null)
+        {
+            _logger.LogWarning("Cancellazione fallita: Recensione con ID {RecensioneId} non trovata.", id);
+            return Result.Failure(Errors.Recensioni.NotFound);
+        }
+
+        _unitOfWork.Recensioni.Remove(recensione);
+        await _unitOfWork.SaveChangesAsync();
+
+        _logger.LogInformation("Recensione con ID {RecensioneId} cancellata (soft delete).", id);
+        return Result.Success();
+    }
+
+    public async Task<Result<bool>> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var exists = await _unitOfWork.Recensioni.ExistsAsync(r => r.Id == id, false, cancellationToken);
+        return exists;
+    }
+
+    public async Task<Result<IEnumerable<RecensioneDto>>> GetByGiocoAsync(Guid giocoId, CancellationToken cancellationToken = default)
+    {
+        var recensioni = await _unitOfWork.Recensioni.GetByGiocoIdAsync(giocoId, false, cancellationToken);
+        var dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(recensioni);
+        return Result<IEnumerable<RecensioneDto>>.Success(dtoList);
+    }
+}

@@ -43,10 +43,9 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(GameStore
 
 // Registrazione Application services
 builder.Services.AddScoped<IUtenteService, UtenteService>();
-// TODO: Aggiungere altri servizi quando saranno implementati
-// builder.Services.AddScoped<IGiocoService, GiocoService>();
-// builder.Services.AddScoped<IAcquistoService, AcquistoService>();
-// builder.Services.AddScoped<IRecensioneService, RecensioneService>();
+builder.Services.AddScoped<IGiocoService, GiocoService>();
+builder.Services.AddScoped<IAcquistoService, AcquistoService>();
+builder.Services.AddScoped<IRecensioneService, RecensioneService>();
 
 // Registrazione API Controllers
 builder.Services.AddControllers();
@@ -98,22 +97,5 @@ if (app.Environment.IsDevelopment())
         app.Logger.LogError(ex, "Errore durante il seeding del database.");
     }
 }
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
 
 app.Run();

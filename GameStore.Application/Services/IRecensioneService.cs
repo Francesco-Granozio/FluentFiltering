@@ -51,28 +51,18 @@ public interface IRecensioneService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Ottiene le recensioni di un utente
+    /// Verifica se una recensione esiste
     /// </summary>
-    /// <param name="utenteId">ID dell'utente</param>
-    /// <param name="includeDeleted">Indica se includere recensioni cancellate</param>
+    /// <param name="id">ID della recensione</param>
     /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Risultato con lista delle recensioni</returns>
-    Task<Result<IEnumerable<RecensioneDto>>> GetByUtenteIdAsync(Guid utenteId, bool includeDeleted = false, CancellationToken cancellationToken = default);
+    /// <returns>Risultato con valore booleano</returns>
+    Task<Result<bool>> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Ottiene le recensioni di un gioco
     /// </summary>
     /// <param name="giocoId">ID del gioco</param>
-    /// <param name="includeDeleted">Indica se includere recensioni cancellate</param>
     /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Risultato con lista delle recensioni</returns>
-    Task<Result<IEnumerable<RecensioneDto>>> GetByGiocoIdAsync(Guid giocoId, bool includeDeleted = false, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Calcola la media dei punteggi per un gioco
-    /// </summary>
-    /// <param name="giocoId">ID del gioco</param>
-    /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Risultato con media dei punteggi</returns>
-    Task<Result<double?>> GetMediaPunteggiAsync(Guid giocoId, CancellationToken cancellationToken = default);
+    /// <returns>Lista delle recensioni del gioco</returns>
+    Task<Result<IEnumerable<RecensioneDto>>> GetByGiocoAsync(Guid giocoId, CancellationToken cancellationToken = default);
 }

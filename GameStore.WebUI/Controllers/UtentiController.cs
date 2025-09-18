@@ -3,6 +3,7 @@ using GameStore.Domain.DTOs.Common;
 using GameStore.Application.Services;
 using GameStore.WebUI.Controllers;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 namespace GameStore.WebUI.Controllers;
 
@@ -14,10 +15,17 @@ namespace GameStore.WebUI.Controllers;
 public class UtentiController : BaseController
 {
     private readonly IUtenteService _utenteService;
+    private readonly IValidator<CreaUtenteDto> _createValidator;
+    private readonly IValidator<AggiornaUtenteDto> _updateValidator;
 
-    public UtentiController(IUtenteService utenteService)
+    public UtentiController(
+        IUtenteService utenteService,
+        IValidator<CreaUtenteDto> createValidator,
+        IValidator<AggiornaUtenteDto> updateValidator)
     {
         _utenteService = utenteService;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
     }
 
     /// <summary>
@@ -63,8 +71,14 @@ public class UtentiController : BaseController
         [FromBody] CreaUtenteDto dto, 
         CancellationToken cancellationToken = default)
     {
-        if (!ModelState.IsValid)
+        // Validazione con FluentValidation
+        var validationResult = await _createValidator.ValidateAsync(dto, cancellationToken);
+        if (!validationResult.IsValid)
         {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
             return BadRequest(ModelState);
         }
 
@@ -85,8 +99,14 @@ public class UtentiController : BaseController
         [FromBody] AggiornaUtenteDto dto, 
         CancellationToken cancellationToken = default)
     {
-        if (!ModelState.IsValid)
+        // Validazione con FluentValidation
+        var validationResult = await _updateValidator.ValidateAsync(dto, cancellationToken);
+        if (!validationResult.IsValid)
         {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
             return BadRequest(ModelState);
         }
 

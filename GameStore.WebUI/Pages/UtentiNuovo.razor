@@ -1,0 +1,99 @@
+@page "/utenti/nuovo"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Application.Common
+@inject IUtenteService UtenteService
+@inject NavigationManager Navigation
+
+<PageTitle>Nuovo Utente</PageTitle>
+
+<h3>Nuovo Utente</h3>
+
+<EditForm Model="utente" OnValidSubmit="SalvaUtente">
+    <DataAnnotationsValidator />
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <InputText id="username" @bind-Value="utente.Username" class="form-control" />
+                <ValidationMessage For="@(() => utente.Username)" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <InputText id="email" @bind-Value="utente.Email" class="form-control" />
+                <ValidationMessage For="@(() => utente.Email)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="nomeCompleto" class="form-label">Nome Completo</label>
+                <InputText id="nomeCompleto" @bind-Value="utente.NomeCompleto" class="form-control" />
+                <ValidationMessage For="@(() => utente.NomeCompleto)" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="paese" class="form-label">Paese</label>
+                <InputText id="paese" @bind-Value="utente.Paese" class="form-control" />
+                <ValidationMessage For="@(() => utente.Paese)" />
+            </div>
+        </div>
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+            @if (isSaving)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            }
+            Salva
+        </button>
+        <a href="/utenti" class="btn btn-secondary ms-2">Annulla</a>
+    </div>
+</EditForm>
+
+@code {
+    private CreaUtenteDto utente = new();
+    private bool isSaving = false;
+    private string? errorMessage;
+
+    private async Task SalvaUtente()
+    {
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+
+            var result = await UtenteService.CreateAsync(utente);
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/utenti");
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il salvataggio: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

@@ -1,0 +1,171 @@
+@page "/giochi"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Domain.DTOs.Common
+@using GameStore.Application.Common
+@inject IGiocoService GiocoService
+@inject NavigationManager Navigation
+
+<PageTitle>Gestione Giochi</PageTitle>
+
+<h3>Gestione Giochi</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="AggiungiGioco">
+        <i class="bi bi-plus-circle"></i> Aggiungi Gioco
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Titolo</th>
+                    <th>Genere</th>
+                    <th>Piattaforma</th>
+                    <th>Sviluppatore</th>
+                    <th>Prezzo</th>
+                    <th>Data Rilascio</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gioco in giochi?.Items ?? new List<GiocoDto>())
+                {
+                    <tr>
+                        <td>@gioco.Titolo</td>
+                        <td>@gioco.Genere</td>
+                        <td>@gioco.Piattaforma</td>
+                        <td>@gioco.Sviluppatore</td>
+                        <td>@gioco.PrezzoListino.ToString("C")</td>
+                        <td>@(gioco.DataRilascio?.ToString("dd/MM/yyyy"))</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaGioco(gioco.Id)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaGioco(gioco.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (giochi != null && giochi.TotalPages > 1)
+    {
+        <nav aria-label="Paginazione">
+            <ul class="pagination">
+                @for (int i = 1; i <= giochi.TotalPages; i++)
+                {
+                    <li class="page-item @(i == giochi.PageNumber ? "active" : "")">
+                        <a class="page-link" href="#" @onclick="() => CaricaGiochi(i)" @onclick:preventDefault="true">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+
+@code {
+    private PagedResult<GiocoDto>? giochi;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CaricaGiochi(1);
+    }
+
+    private async Task CaricaGiochi(int page)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            currentPage = page;
+
+            var request = new FilterRequest
+            {
+                PageNumber = page,
+                PageSize = pageSize
+            };
+
+            var result = await GiocoService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                giochi = result.Value;
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AggiungiGioco()
+    {
+        Navigation.NavigateTo("/giochi/nuovo");
+    }
+
+    private void ModificaGioco(Guid id)
+    {
+        Navigation.NavigateTo($"/giochi/modifica/{id}");
+    }
+
+    private async Task CancellaGioco(Guid id)
+    {
+        if (await ConfirmDelete())
+        {
+            try
+            {
+                var result = await GiocoService.DeleteAsync(id);
+                if (result.IsSuccess)
+                {
+                    await CaricaGiochi(currentPage);
+                }
+                else
+                {
+                    errorMessage = result.Error.Message;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Errore durante la cancellazione: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Implementazione semplificata - in un'app reale usare un modal
+        return await Task.FromResult(true);
+    }
+}

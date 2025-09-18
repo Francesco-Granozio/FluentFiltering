@@ -51,20 +51,18 @@ public interface IAcquistoService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Verifica se un acquisto esiste
+    /// </summary>
+    /// <param name="id">ID dell'acquisto</param>
+    /// <param name="cancellationToken">Token di cancellazione</param>
+    /// <returns>Risultato con valore booleano</returns>
+    Task<Result<bool>> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Ottiene gli acquisti di un utente
     /// </summary>
     /// <param name="utenteId">ID dell'utente</param>
-    /// <param name="includeDeleted">Indica se includere acquisti cancellati</param>
     /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Risultato con lista degli acquisti</returns>
-    Task<Result<IEnumerable<AcquistoDto>>> GetByUtenteIdAsync(Guid utenteId, bool includeDeleted = false, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Ottiene gli acquisti di un gioco
-    /// </summary>
-    /// <param name="giocoId">ID del gioco</param>
-    /// <param name="includeDeleted">Indica se includere acquisti cancellati</param>
-    /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Risultato con lista degli acquisti</returns>
-    Task<Result<IEnumerable<AcquistoDto>>> GetByGiocoIdAsync(Guid giocoId, bool includeDeleted = false, CancellationToken cancellationToken = default);
+    /// <returns>Lista degli acquisti dell'utente</returns>
+    Task<Result<IEnumerable<AcquistoDto>>> GetByUtenteAsync(Guid utenteId, CancellationToken cancellationToken = default);
 }

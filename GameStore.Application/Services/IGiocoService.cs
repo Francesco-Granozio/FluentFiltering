@@ -51,10 +51,10 @@ public interface IGiocoService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Ottiene i giochi più venduti
+    /// Verifica se un gioco esiste
     /// </summary>
-    /// <param name="count">Numero di giochi da restituire</param>
+    /// <param name="id">ID del gioco</param>
     /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Risultato con lista dei giochi più venduti</returns>
-    Task<Result<IEnumerable<GiocoDto>>> GetTopSellingAsync(int count = 10, CancellationToken cancellationToken = default);
+    /// <returns>Risultato con valore booleano</returns>
+    Task<Result<bool>> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
 }

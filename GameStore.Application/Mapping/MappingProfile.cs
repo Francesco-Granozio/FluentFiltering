@@ -52,7 +52,7 @@ public class MappingProfile : Profile
 
         // Mappature per Acquisto
         CreateMap<Acquisto, AcquistoDto>()
-            .ForMember(dest => dest.UtenteNome, opt => opt.MapFrom(src => src.Utente.NomeCompleto))
+            .ForMember(dest => dest.UtenteUsername, opt => opt.MapFrom(src => src.Utente.Username))
             .ForMember(dest => dest.GiocoTitolo, opt => opt.MapFrom(src => src.Gioco.Titolo));
         
         CreateMap<CreaAcquistoDto, Acquisto>()
@@ -76,7 +76,7 @@ public class MappingProfile : Profile
 
         // Mappature per Recensione
         CreateMap<Recensione, RecensioneDto>()
-            .ForMember(dest => dest.UtenteNome, opt => opt.MapFrom(src => src.Utente.NomeCompleto))
+            .ForMember(dest => dest.UtenteUsername, opt => opt.MapFrom(src => src.Utente.Username))
             .ForMember(dest => dest.GiocoTitolo, opt => opt.MapFrom(src => src.Gioco.Titolo));
         
         CreateMap<CreaRecensioneDto, Recensione>()

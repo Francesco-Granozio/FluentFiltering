@@ -1,0 +1,118 @@
+@page "/giochi/nuovo"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Application.Common
+@inject IGiocoService GiocoService
+@inject NavigationManager Navigation
+
+<PageTitle>Nuovo Gioco</PageTitle>
+
+<h3>Nuovo Gioco</h3>
+
+<EditForm Model="gioco" OnValidSubmit="SalvaGioco">
+    <DataAnnotationsValidator />
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="mb-3">
+                <label for="titolo" class="form-label">Titolo</label>
+                <InputText id="titolo" @bind-Value="gioco.Titolo" class="form-control" />
+                <ValidationMessage For="@(() => gioco.Titolo)" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="prezzo" class="form-label">Prezzo</label>
+                <InputNumber id="prezzo" @bind-Value="gioco.PrezzoListino" class="form-control" />
+                <ValidationMessage For="@(() => gioco.PrezzoListino)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="descrizione" class="form-label">Descrizione</label>
+        <InputTextArea id="descrizione" @bind-Value="gioco.Descrizione" class="form-control" rows="3" />
+        <ValidationMessage For="@(() => gioco.Descrizione)" />
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="genere" class="form-label">Genere</label>
+                <InputText id="genere" @bind-Value="gioco.Genere" class="form-control" />
+                <ValidationMessage For="@(() => gioco.Genere)" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="piattaforma" class="form-label">Piattaforma</label>
+                <InputText id="piattaforma" @bind-Value="gioco.Piattaforma" class="form-control" />
+                <ValidationMessage For="@(() => gioco.Piattaforma)" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="sviluppatore" class="form-label">Sviluppatore</label>
+                <InputText id="sviluppatore" @bind-Value="gioco.Sviluppatore" class="form-control" />
+                <ValidationMessage For="@(() => gioco.Sviluppatore)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="dataRilascio" class="form-label">Data Rilascio</label>
+        <InputDate id="dataRilascio" @bind-Value="gioco.DataRilascio" class="form-control" />
+        <ValidationMessage For="@(() => gioco.DataRilascio)" />
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+            @if (isSaving)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            }
+            Salva
+        </button>
+        <a href="/giochi" class="btn btn-secondary ms-2">Annulla</a>
+    </div>
+</EditForm>
+
+@code {
+    private CreaGiocoDto gioco = new();
+    private bool isSaving = false;
+    private string? errorMessage;
+
+    private async Task SalvaGioco()
+    {
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+
+            var result = await GiocoService.CreateAsync(gioco);
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/giochi");
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il salvataggio: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

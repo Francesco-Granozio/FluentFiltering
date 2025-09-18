@@ -1,0 +1,171 @@
+@page "/acquisti"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Domain.DTOs.Common
+@using GameStore.Application.Common
+@inject IAcquistoService AcquistoService
+@inject NavigationManager Navigation
+
+<PageTitle>Gestione Acquisti</PageTitle>
+
+<h3>Gestione Acquisti</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="AggiungiAcquisto">
+        <i class="bi bi-plus-circle"></i> Aggiungi Acquisto
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Utente</th>
+                    <th>Gioco</th>
+                    <th>Data Acquisto</th>
+                    <th>Prezzo Pagato</th>
+                    <th>Quantità</th>
+                    <th>Metodo Pagamento</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var acquisto in acquisti?.Items ?? new List<AcquistoDto>())
+                {
+                    <tr>
+                        <td>@acquisto.UtenteUsername</td>
+                        <td>@acquisto.GiocoTitolo</td>
+                        <td>@acquisto.DataAcquisto.ToString("dd/MM/yyyy")</td>
+                        <td>@acquisto.PrezzoPagato.ToString("C")</td>
+                        <td>@acquisto.Quantita</td>
+                        <td>@acquisto.MetodoPagamento</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaAcquisto(acquisto.Id)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaAcquisto(acquisto.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (acquisti != null && acquisti.TotalPages > 1)
+    {
+        <nav aria-label="Paginazione">
+            <ul class="pagination">
+                @for (int i = 1; i <= acquisti.TotalPages; i++)
+                {
+                    <li class="page-item @(i == acquisti.PageNumber ? "active" : "")">
+                        <a class="page-link" href="#" @onclick="() => CaricaAcquisti(i)" @onclick:preventDefault="true">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+
+@code {
+    private PagedResult<AcquistoDto>? acquisti;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CaricaAcquisti(1);
+    }
+
+    private async Task CaricaAcquisti(int page)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            currentPage = page;
+
+            var request = new FilterRequest
+            {
+                PageNumber = page,
+                PageSize = pageSize
+            };
+
+            var result = await AcquistoService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                acquisti = result.Value;
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AggiungiAcquisto()
+    {
+        Navigation.NavigateTo("/acquisti/nuovo");
+    }
+
+    private void ModificaAcquisto(Guid id)
+    {
+        Navigation.NavigateTo($"/acquisti/modifica/{id}");
+    }
+
+    private async Task CancellaAcquisto(Guid id)
+    {
+        if (await ConfirmDelete())
+        {
+            try
+            {
+                var result = await AcquistoService.DeleteAsync(id);
+                if (result.IsSuccess)
+                {
+                    await CaricaAcquisti(currentPage);
+                }
+                else
+                {
+                    errorMessage = result.Error.Message;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Errore durante la cancellazione: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Implementazione semplificata - in un'app reale usare un modal
+        return await Task.FromResult(true);
+    }
+}

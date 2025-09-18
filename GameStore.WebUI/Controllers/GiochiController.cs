@@ -114,17 +114,17 @@ public class GiochiController : BaseController
     }
 
     /// <summary>
-    /// Ottiene i giochi più venduti
+    /// Verifica se un gioco esiste
     /// </summary>
-    /// <param name="count">Numero di giochi da restituire</param>
+    /// <param name="id">ID del gioco</param>
     /// <param name="cancellationToken">Token di cancellazione</param>
-    /// <returns>Lista dei giochi più venduti</returns>
-    [HttpGet("top-selling")]
-    public async Task<ActionResult<IEnumerable<GiocoDto>>> GetTopSellingAsync(
-        [FromQuery] int count = 10, 
+    /// <returns>True se il gioco esiste</returns>
+    [HttpGet("{id}/exists")]
+    public async Task<ActionResult<bool>> ExistsAsync(
+        Guid id, 
         CancellationToken cancellationToken = default)
     {
-        var result = await _giocoService.GetTopSellingAsync(count, cancellationToken);
+        var result = await _giocoService.ExistsAsync(id, cancellationToken);
         return HandleResult(result);
     }
 }

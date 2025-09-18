@@ -1,0 +1,169 @@
+@page "/utenti"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Domain.DTOs.Common
+@using GameStore.Application.Common
+@inject IUtenteService UtenteService
+@inject NavigationManager Navigation
+
+<PageTitle>Gestione Utenti</PageTitle>
+
+<h3>Gestione Utenti</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="AggiungiUtente">
+        <i class="bi bi-plus-circle"></i> Aggiungi Utente
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Nome Completo</th>
+                    <th>Paese</th>
+                    <th>Data Registrazione</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var utente in utenti?.Items ?? new List<UtenteDto>())
+                {
+                    <tr>
+                        <td>@utente.Username</td>
+                        <td>@utente.Email</td>
+                        <td>@utente.NomeCompleto</td>
+                        <td>@utente.Paese</td>
+                        <td>@utente.DataRegistrazione.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaUtente(utente.Id)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaUtente(utente.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (utenti != null && utenti.TotalPages > 1)
+    {
+        <nav aria-label="Paginazione">
+            <ul class="pagination">
+                @for (int i = 1; i <= utenti.TotalPages; i++)
+                {
+                    <li class="page-item @(i == utenti.PageNumber ? "active" : "")">
+                        <a class="page-link" href="#" @onclick="() => CaricaUtenti(i)" @onclick:preventDefault="true">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+
+@code {
+    private PagedResult<UtenteDto>? utenti;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CaricaUtenti(1);
+    }
+
+    private async Task CaricaUtenti(int page)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            currentPage = page;
+
+            var request = new FilterRequest
+            {
+                PageNumber = page,
+                PageSize = pageSize
+            };
+
+            var result = await UtenteService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                utenti = result.Value;
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AggiungiUtente()
+    {
+        Navigation.NavigateTo("/utenti/nuovo");
+    }
+
+    private void ModificaUtente(Guid id)
+    {
+        Navigation.NavigateTo($"/utenti/modifica/{id}");
+    }
+
+    private async Task CancellaUtente(Guid id)
+    {
+        if (await ConfirmDelete())
+        {
+            try
+            {
+                var result = await UtenteService.DeleteAsync(id);
+                if (result.IsSuccess)
+                {
+                    await CaricaUtenti(currentPage);
+                }
+                else
+                {
+                    errorMessage = result.Error.Message;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Errore durante la cancellazione: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Implementazione semplificata - in un'app reale usare un modal
+        return await Task.FromResult(true);
+    }
+}
