@@ -8,121 +8,180 @@
 
 <PageTitle>Gestione Giochi</PageTitle>
 
-<h3>Gestione Giochi</h3>
-
-<div class="mb-3">
-    <button class="btn btn-primary" @onclick="AggiungiGioco">
-        <i class="bi bi-plus-circle"></i> Aggiungi Gioco
-    </button>
+<div class="row mb-3">
+    <div class="col">
+        <h3>Gestione Giochi</h3>
+    </div>
+    <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Aggiungi Gioco" Click="AggiungiGioco" />
+    </div>
 </div>
 
-@if (isLoading)
+@if (errorMessage != null)
 {
-    <div class="text-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Caricamento...</span>
-        </div>
-    </div>
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
 }
-else if (errorMessage != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @errorMessage
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Titolo</th>
-                    <th>Genere</th>
-                    <th>Piattaforma</th>
-                    <th>Sviluppatore</th>
-                    <th>Prezzo</th>
-                    <th>Data Rilascio</th>
-                    <th>Azioni</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var gioco in giochi?.Items ?? new List<GiocoDto>())
-                {
-                    <tr>
-                        <td>@gioco.Titolo</td>
-                        <td>@gioco.Genere</td>
-                        <td>@gioco.Piattaforma</td>
-                        <td>@gioco.Sviluppatore</td>
-                        <td>@gioco.PrezzoListino.ToString("C")</td>
-                        <td>@(gioco.DataRilascio?.ToString("dd/MM/yyyy"))</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaGioco(gioco.Id)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaGioco(gioco.Id)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
 
-    @if (giochi != null && giochi.TotalPages > 1)
-    {
-        <nav aria-label="Paginazione">
-            <ul class="pagination">
-                @for (int i = 1; i <= giochi.TotalPages; i++)
-                {
-                    <li class="page-item @(i == giochi.PageNumber ? "active" : "")">
-                        <a class="page-link" href="#" @onclick="() => CaricaGiochi(i)" @onclick:preventDefault="true">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
-}
+<RadzenDataGrid @ref="grid" 
+                Data="@giochi" 
+                TItem="GiocoDto"
+                AllowPaging="true" 
+                AllowSorting="true"
+                AllowFiltering="true"
+                FilterMode="FilterMode.Advanced"
+                PageSize="20"
+                Count="@totalCount"
+                PagerHorizontalAlign="HorizontalAlign.Left"
+                ShowPagingSummary="true"
+                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                Loading="@isLoading"
+                LoadData="@LoadData"
+                RowClick="@OnRowClick">
+    
+    <Columns>
+        <RadzenDataGridColumn TItem="GiocoDto" Property="Titolo" Title="Titolo" Width="200px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@gioco.Titolo" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Property="Descrizione" Title="Descrizione" Width="300px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@(gioco.Descrizione?.Length > 50 ? gioco.Descrizione.Substring(0, 50) + "..." : gioco.Descrizione)" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Property="PrezzoListino" Title="Prezzo" Width="100px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@gioco.PrezzoListino.ToString("C")" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Property="DataRilascio" Title="Data Rilascio" Width="120px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@gioco.DataRilascio?.ToString("dd/MM/yyyy")" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Property="Genere" Title="Genere" Width="120px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@gioco.Genere" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Property="Piattaforma" Title="Piattaforma" Width="120px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@gioco.Piattaforma" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Property="Sviluppatore" Title="Sviluppatore" Width="150px">
+            <Template Context="gioco">
+                <RadzenLabel Text="@gioco.Sviluppatore" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="GiocoDto" Filterable="false" Sortable="false" Width="120px">
+            <Template Context="gioco">
+                <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                             Icon="edit" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => ModificaGioco(gioco.Id))" 
+                             class="me-1" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
+                             Icon="delete" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => CancellaGioco(gioco.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
 @code {
-    private PagedResult<GiocoDto>? giochi;
-    private bool isLoading = true;
+    private RadzenDataGrid<GiocoDto>? grid;
+    private IEnumerable<GiocoDto> giochi = new List<GiocoDto>();
+    private bool isLoading = false;
     private string? errorMessage;
-    private int currentPage = 1;
-    private const int pageSize = 20;
+    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        await CaricaGiochi(1);
+        await LoadInitialData();
     }
 
-    private async Task CaricaGiochi(int page)
+    private async Task LoadInitialData()
     {
         try
         {
             isLoading = true;
             errorMessage = null;
-            currentPage = page;
 
             var request = new FilterRequest
             {
-                PageNumber = page,
-                PageSize = pageSize
+                PageNumber = 1,
+                PageSize = 20,
+                OrderBy = "DataCreazione desc"
             };
 
             var result = await GiocoService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                giochi = result.Value;
+                giochi = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                Console.WriteLine($"Loaded {giochi.Count()} games, total: {totalCount}");
             }
             else
             {
                 errorMessage = result.Error.Message;
+                giochi = new List<GiocoDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading games: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            giochi = new List<GiocoDto>();
+            totalCount = 0;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var request = new FilterRequest
+            {
+                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
+                PageSize = args.Top ?? 20,
+                OrderBy = "DataCreazione desc"
+            };
+
+            var result = await GiocoService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                giochi = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                giochi = new List<GiocoDto>();
+                totalCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            giochi = new List<GiocoDto>();
+            totalCount = 0;
         }
         finally
         {
@@ -149,7 +208,7 @@ else
                 var result = await GiocoService.DeleteAsync(id);
                 if (result.IsSuccess)
                 {
-                    await CaricaGiochi(currentPage);
+                    await grid?.Reload();
                 }
                 else
                 {
@@ -167,5 +226,10 @@ else
     {
         // Implementazione semplificata - in un'app reale usare un modal
         return await Task.FromResult(true);
+    }
+
+    private void OnRowClick(DataGridRowMouseEventArgs<GiocoDto> args)
+    {
+        ModificaGioco(args.Data.Id);
     }
 }

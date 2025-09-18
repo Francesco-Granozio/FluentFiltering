@@ -8,119 +8,171 @@
 
 <PageTitle>Gestione Utenti</PageTitle>
 
-<h3>Gestione Utenti</h3>
-
-<div class="mb-3">
-    <button class="btn btn-primary" @onclick="AggiungiUtente">
-        <i class="bi bi-plus-circle"></i> Aggiungi Utente
-    </button>
+<div class="row mb-3">
+    <div class="col">
+        <h3>Gestione Utenti</h3>
+    </div>
+    <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Aggiungi Utente" Click="AggiungiUtente" />
+    </div>
 </div>
 
-@if (isLoading)
+@if (errorMessage != null)
 {
-    <div class="text-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Caricamento...</span>
-        </div>
-    </div>
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
 }
-else if (errorMessage != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @errorMessage
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Nome Completo</th>
-                    <th>Paese</th>
-                    <th>Data Registrazione</th>
-                    <th>Azioni</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var utente in utenti?.Items ?? new List<UtenteDto>())
-                {
-                    <tr>
-                        <td>@utente.Username</td>
-                        <td>@utente.Email</td>
-                        <td>@utente.NomeCompleto</td>
-                        <td>@utente.Paese</td>
-                        <td>@utente.DataRegistrazione.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaUtente(utente.Id)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaUtente(utente.Id)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
 
-    @if (utenti != null && utenti.TotalPages > 1)
-    {
-        <nav aria-label="Paginazione">
-            <ul class="pagination">
-                @for (int i = 1; i <= utenti.TotalPages; i++)
-                {
-                    <li class="page-item @(i == utenti.PageNumber ? "active" : "")">
-                        <a class="page-link" href="#" @onclick="() => CaricaUtenti(i)" @onclick:preventDefault="true">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
-}
+
+<RadzenDataGrid @ref="grid" 
+                Data="@utenti" 
+                TItem="UtenteDto"
+                AllowPaging="true" 
+                AllowSorting="true"
+                AllowFiltering="true"
+                FilterMode="FilterMode.Advanced"
+                PageSize="20"
+                Count="@totalCount"
+                PagerHorizontalAlign="HorizontalAlign.Left"
+                ShowPagingSummary="true"
+                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                Loading="@isLoading"
+                LoadData="@LoadData"
+                RowClick="@OnRowClick">
+    
+    <Columns>
+        <RadzenDataGridColumn TItem="UtenteDto" Property="Username" Title="Username" Width="150px">
+            <Template Context="utente">
+                <RadzenLabel Text="@utente.Username" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="UtenteDto" Property="Email" Title="Email" Width="200px">
+            <Template Context="utente">
+                <RadzenLabel Text="@utente.Email" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="UtenteDto" Property="NomeCompleto" Title="Nome Completo" Width="200px">
+            <Template Context="utente">
+                <RadzenLabel Text="@utente.NomeCompleto" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="UtenteDto" Property="Paese" Title="Paese" Width="120px">
+            <Template Context="utente">
+                <RadzenLabel Text="@utente.Paese" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="UtenteDto" Property="DataRegistrazione" Title="Data Registrazione" Width="150px">
+            <Template Context="utente">
+                <RadzenLabel Text="@utente.DataRegistrazione.ToString("dd/MM/yyyy")" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="UtenteDto" Filterable="false" Sortable="false" Width="120px">
+            <Template Context="utente">
+                <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                             Icon="edit" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => ModificaUtente(utente.Id))" 
+                             class="me-1" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
+                             Icon="delete" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => CancellaUtente(utente.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
 @code {
-    private PagedResult<UtenteDto>? utenti;
-    private bool isLoading = true;
+    private RadzenDataGrid<UtenteDto>? grid;
+    private IEnumerable<UtenteDto> utenti = new List<UtenteDto>();
+    private bool isLoading = false;
     private string? errorMessage;
-    private int currentPage = 1;
-    private const int pageSize = 20;
+    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        await CaricaUtenti(1);
+        await LoadInitialData();
     }
 
-    private async Task CaricaUtenti(int page)
+    private async Task LoadInitialData()
     {
         try
         {
             isLoading = true;
             errorMessage = null;
-            currentPage = page;
 
             var request = new FilterRequest
             {
-                PageNumber = page,
-                PageSize = pageSize
+                PageNumber = 1,
+                PageSize = 20,
+                OrderBy = "DataCreazione desc"
             };
 
             var result = await UtenteService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                utenti = result.Value;
+                utenti = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
             }
             else
             {
                 errorMessage = result.Error.Message;
+                utenti = new List<UtenteDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading users: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            utenti = new List<UtenteDto>();
+            totalCount = 0;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var request = new FilterRequest
+            {
+                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
+                PageSize = args.Top ?? 20,
+                OrderBy = "DataCreazione desc"
+            };
+
+            var result = await UtenteService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                utenti = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                utenti = new List<UtenteDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading users: {result.Error.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            utenti = new List<UtenteDto>();
+            totalCount = 0;
         }
         finally
         {
@@ -147,7 +199,7 @@ else
                 var result = await UtenteService.DeleteAsync(id);
                 if (result.IsSuccess)
                 {
-                    await CaricaUtenti(currentPage);
+                    await grid?.Reload();
                 }
                 else
                 {
@@ -165,5 +217,10 @@ else
     {
         // Implementazione semplificata - in un'app reale usare un modal
         return await Task.FromResult(true);
+    }
+
+    private void OnRowClick(DataGridRowMouseEventArgs<UtenteDto> args)
+    {
+        ModificaUtente(args.Data.Id);
     }
 }

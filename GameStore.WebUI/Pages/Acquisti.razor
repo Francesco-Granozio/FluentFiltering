@@ -8,121 +8,179 @@
 
 <PageTitle>Gestione Acquisti</PageTitle>
 
-<h3>Gestione Acquisti</h3>
-
-<div class="mb-3">
-    <button class="btn btn-primary" @onclick="AggiungiAcquisto">
-        <i class="bi bi-plus-circle"></i> Aggiungi Acquisto
-    </button>
+<div class="row mb-3">
+    <div class="col">
+        <h3>Gestione Acquisti</h3>
+    </div>
+    <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuovo Acquisto" Click="AggiungiAcquisto" />
+    </div>
 </div>
 
-@if (isLoading)
+@if (errorMessage != null)
 {
-    <div class="text-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Caricamento...</span>
-        </div>
-    </div>
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
 }
-else if (errorMessage != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @errorMessage
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Utente</th>
-                    <th>Gioco</th>
-                    <th>Data Acquisto</th>
-                    <th>Prezzo Pagato</th>
-                    <th>Quantità</th>
-                    <th>Metodo Pagamento</th>
-                    <th>Azioni</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var acquisto in acquisti?.Items ?? new List<AcquistoDto>())
-                {
-                    <tr>
-                        <td>@acquisto.UtenteUsername</td>
-                        <td>@acquisto.GiocoTitolo</td>
-                        <td>@acquisto.DataAcquisto.ToString("dd/MM/yyyy")</td>
-                        <td>@acquisto.PrezzoPagato.ToString("C")</td>
-                        <td>@acquisto.Quantita</td>
-                        <td>@acquisto.MetodoPagamento</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaAcquisto(acquisto.Id)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaAcquisto(acquisto.Id)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
 
-    @if (acquisti != null && acquisti.TotalPages > 1)
-    {
-        <nav aria-label="Paginazione">
-            <ul class="pagination">
-                @for (int i = 1; i <= acquisti.TotalPages; i++)
-                {
-                    <li class="page-item @(i == acquisti.PageNumber ? "active" : "")">
-                        <a class="page-link" href="#" @onclick="() => CaricaAcquisti(i)" @onclick:preventDefault="true">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
-}
+<RadzenDataGrid @ref="grid" 
+                Data="@acquisti" 
+                TItem="AcquistoDto"
+                AllowPaging="true" 
+                AllowSorting="true"
+                AllowFiltering="true"
+                FilterMode="FilterMode.Advanced"
+                PageSize="20"
+                Count="@totalCount"
+                PagerHorizontalAlign="HorizontalAlign.Left"
+                ShowPagingSummary="true"
+                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                Loading="@isLoading"
+                LoadData="@LoadData">
+    
+    <Columns>
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="UtenteUsername" Title="Utente" Width="150px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.UtenteUsername" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="GiocoTitolo" Title="Gioco" Width="200px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.GiocoTitolo" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.DataAcquisto.ToString("dd/MM/yyyy")" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.PrezzoPagato.ToString("C")" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="Quantita" Title="Quantità" Width="100px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.Quantita.ToString()" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="150px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.MetodoPagamento" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px">
+            <Template Context="acquisto">
+                <RadzenLabel Text="@acquisto.CodiceSconto" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="AcquistoDto" Filterable="false" Sortable="false" Width="120px">
+            <Template Context="acquisto">
+                <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                             Icon="edit" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => ModificaAcquisto(acquisto.Id))" 
+                             class="me-1" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
+                             Icon="delete" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => CancellaAcquisto(acquisto.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
 @code {
-    private PagedResult<AcquistoDto>? acquisti;
-    private bool isLoading = true;
+    private RadzenDataGrid<AcquistoDto>? grid;
+    private IEnumerable<AcquistoDto> acquisti = new List<AcquistoDto>();
+    private bool isLoading = false;
     private string? errorMessage;
-    private int currentPage = 1;
-    private const int pageSize = 20;
+    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        await CaricaAcquisti(1);
+        await LoadInitialData();
     }
 
-    private async Task CaricaAcquisti(int page)
+    private async Task LoadInitialData()
     {
         try
         {
             isLoading = true;
             errorMessage = null;
-            currentPage = page;
 
             var request = new FilterRequest
             {
-                PageNumber = page,
-                PageSize = pageSize
+                PageNumber = 1,
+                PageSize = 20,
+                OrderBy = "DataCreazione desc"
             };
 
             var result = await AcquistoService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                acquisti = result.Value;
+                acquisti = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                Console.WriteLine($"Loaded {acquisti.Count()} purchases, total: {totalCount}");
             }
             else
             {
                 errorMessage = result.Error.Message;
+                acquisti = new List<AcquistoDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading purchases: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            acquisti = new List<AcquistoDto>();
+            totalCount = 0;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var request = new FilterRequest
+            {
+                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
+                PageSize = args.Top ?? 20,
+                OrderBy = "DataCreazione desc"
+            };
+
+            var result = await AcquistoService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                acquisti = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                acquisti = new List<AcquistoDto>();
+                totalCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            acquisti = new List<AcquistoDto>();
+            totalCount = 0;
         }
         finally
         {
@@ -149,7 +207,7 @@ else
                 var result = await AcquistoService.DeleteAsync(id);
                 if (result.IsSuccess)
                 {
-                    await CaricaAcquisti(currentPage);
+                    await grid?.Reload();
                 }
                 else
                 {

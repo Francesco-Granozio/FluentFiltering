@@ -8,137 +8,194 @@
 
 <PageTitle>Gestione Recensioni</PageTitle>
 
-<h3>Gestione Recensioni</h3>
-
-<div class="mb-3">
-    <button class="btn btn-primary" @onclick="AggiungiRecensione">
-        <i class="bi bi-plus-circle"></i> Aggiungi Recensione
-    </button>
+<div class="row mb-3">
+    <div class="col">
+        <h3>Gestione Recensioni</h3>
+    </div>
+    <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuova Recensione" Click="AggiungiRecensione" />
+    </div>
 </div>
 
-@if (isLoading)
+@if (errorMessage != null)
 {
-    <div class="text-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Caricamento...</span>
-        </div>
-    </div>
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
 }
-else if (errorMessage != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @errorMessage
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Utente</th>
-                    <th>Gioco</th>
-                    <th>Punteggio</th>
-                    <th>Titolo</th>
-                    <th>Data Recensione</th>
-                    <th>Verificata</th>
-                    <th>Azioni</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var recensione in recensioni?.Items ?? new List<RecensioneDto>())
-                {
-                    <tr>
-                        <td>@recensione.UtenteUsername</td>
-                        <td>@recensione.GiocoTitolo</td>
-                        <td>
-                            <div class="d-flex">
-                                @for (int i = 1; i <= 5; i++)
-                                {
-                                    <i class="bi bi-star@(i <= recensione.Punteggio ? "-fill text-warning" : "")"></i>
-                                }
-                            </div>
-                        </td>
-                        <td>@recensione.Titolo</td>
-                        <td>@recensione.DataRecensione.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            @if (recensione.IsRecensioneVerificata)
-                            {
-                                <span class="badge bg-success">Sì</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning">No</span>
-                            }
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ModificaRecensione(recensione.Id)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancellaRecensione(recensione.Id)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
 
-    @if (recensioni != null && recensioni.TotalPages > 1)
-    {
-        <nav aria-label="Paginazione">
-            <ul class="pagination">
-                @for (int i = 1; i <= recensioni.TotalPages; i++)
-                {
-                    <li class="page-item @(i == recensioni.PageNumber ? "active" : "")">
-                        <a class="page-link" href="#" @onclick="() => CaricaRecensioni(i)" @onclick:preventDefault="true">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
-}
+<RadzenDataGrid @ref="grid" 
+                Data="@recensioni" 
+                TItem="RecensioneDto"
+                AllowPaging="true" 
+                AllowSorting="true"
+                AllowFiltering="true"
+                FilterMode="FilterMode.Advanced"
+                PageSize="20"
+                Count="@totalCount"
+                PagerHorizontalAlign="HorizontalAlign.Left"
+                ShowPagingSummary="true"
+                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                Loading="@isLoading"
+                LoadData="@LoadData">
+    
+    <Columns>
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="UtenteUsername" Title="Utente" Width="150px">
+            <Template Context="recensione">
+                <RadzenLabel Text="@recensione.UtenteUsername" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="GiocoTitolo" Title="Gioco" Width="200px">
+            <Template Context="recensione">
+                <RadzenLabel Text="@recensione.GiocoTitolo" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="Punteggio" Title="Punteggio" Width="100px">
+            <Template Context="recensione">
+                <RadzenBadge Text="@recensione.Punteggio.ToString()" 
+                           BadgeStyle="@GetPunteggioStyle(recensione.Punteggio)" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="Titolo" Title="Titolo" Width="200px">
+            <Template Context="recensione">
+                <RadzenLabel Text="@recensione.Titolo" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="Corpo" Title="Recensione" Width="300px">
+            <Template Context="recensione">
+                <RadzenLabel Text="@(recensione.Corpo?.Length > 50 ? recensione.Corpo.Substring(0, 50) + "..." : recensione.Corpo)" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="DataRecensione" Title="Data Recensione" Width="120px">
+            <Template Context="recensione">
+                <RadzenLabel Text="@recensione.DataRecensione.ToString("dd/MM/yyyy")" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="IsRecensioneVerificata" Title="Verificata" Width="100px">
+            <Template Context="recensione">
+                <RadzenCheckBox @bind-Value="@recensione.IsRecensioneVerificata" 
+                               Disabled="true" />
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="RecensioneDto" Filterable="false" Sortable="false" Width="120px">
+            <Template Context="recensione">
+                <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                             Icon="edit" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => ModificaRecensione(recensione.Id))" 
+                             class="me-1" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
+                             Icon="delete" 
+                             Size="ButtonSize.Small" 
+                             Click="@(() => CancellaRecensione(recensione.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 
 @code {
-    private PagedResult<RecensioneDto>? recensioni;
-    private bool isLoading = true;
+    private RadzenDataGrid<RecensioneDto>? grid;
+    private IEnumerable<RecensioneDto> recensioni = new List<RecensioneDto>();
+    private bool isLoading = false;
     private string? errorMessage;
-    private int currentPage = 1;
-    private const int pageSize = 20;
+    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        await CaricaRecensioni(1);
+        await LoadInitialData();
     }
 
-    private async Task CaricaRecensioni(int page)
+    private async Task LoadInitialData()
     {
         try
         {
             isLoading = true;
             errorMessage = null;
-            currentPage = page;
 
             var request = new FilterRequest
             {
-                PageNumber = page,
-                PageSize = pageSize
+                PageNumber = 1,
+                PageSize = 20,
+                OrderBy = "DataCreazione desc"
             };
 
             var result = await RecensioneService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                recensioni = result.Value;
+                recensioni = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                Console.WriteLine($"Loaded {recensioni.Count()} reviews, total: {totalCount}");
             }
             else
             {
                 errorMessage = result.Error.Message;
+                recensioni = new List<RecensioneDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading reviews: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            recensioni = new List<RecensioneDto>();
+            totalCount = 0;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private BadgeStyle GetPunteggioStyle(int punteggio)
+    {
+        return punteggio switch
+        {
+            5 => BadgeStyle.Success,
+            4 => BadgeStyle.Primary,
+            3 => BadgeStyle.Info,
+            2 => BadgeStyle.Warning,
+            1 => BadgeStyle.Danger,
+            _ => BadgeStyle.Light
+        };
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var request = new FilterRequest
+            {
+                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
+                PageSize = args.Top ?? 20,
+                OrderBy = "DataCreazione desc"
+            };
+
+            var result = await RecensioneService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                recensioni = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                recensioni = new List<RecensioneDto>();
+                totalCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+            recensioni = new List<RecensioneDto>();
+            totalCount = 0;
         }
         finally
         {
@@ -165,7 +222,7 @@ else
                 var result = await RecensioneService.DeleteAsync(id);
                 if (result.IsSuccess)
                 {
-                    await CaricaRecensioni(currentPage);
+                    await grid?.Reload();
                 }
                 else
                 {

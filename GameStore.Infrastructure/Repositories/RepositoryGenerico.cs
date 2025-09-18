@@ -78,7 +78,7 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         // Applica il filtro dinamico se fornito
         if (!string.IsNullOrWhiteSpace(request.Filter))
         {
-            var validatedFilter = ValidateAndSanitizeFilter(request.Filter);
+            var validatedFilter = DynamicLinqHelper.ValidateAndSanitizeFilter(request.Filter, typeof(T));
             query = query.Where(validatedFilter);
         }
 
@@ -88,13 +88,13 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         // Applica l'ordinamento se fornito
         if (!string.IsNullOrWhiteSpace(request.OrderBy))
         {
-            var validatedOrderBy = ValidateAndSanitizeOrderBy(request.OrderBy);
+            var validatedOrderBy = DynamicLinqHelper.ValidateAndSanitizeOrderBy(request.OrderBy, typeof(T));
             query = query.OrderBy(validatedOrderBy);
         }
         else
         {
-            // Ordinamento predefinito per ID
-            query = query.OrderBy("Id");
+            // Ordinamento predefinito per DataCreazione desc
+            query = query.OrderBy("DataCreazione desc");
         }
 
         // Applica la paginazione
@@ -202,98 +202,6 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         return Expression.Lambda<Func<T, bool>>(equality, parameter);
     }
 
-    private string ValidateAndSanitizeFilter(string filter)
-    {
-        // Estrai i nomi dei campi dal filtro per validarli
-        var fields = ExtractFieldNamesFromFilter(filter);
-        
-        foreach (var field in fields)
-        {
-            if (!FieldWhitelist.IsFieldAllowed<T>(field))
-            {
-                throw new ArgumentException($"Campo '{field}' non consentito per il filtraggio");
-            }
-        }
-
-        return filter;
-    }
-
-    private string ValidateAndSanitizeOrderBy(string orderBy)
-    {
-        // Estrai i nomi dei campi dall'ordinamento per validarli
-        var fields = ExtractFieldNamesFromOrderBy(orderBy);
-        
-        foreach (var field in fields)
-        {
-            if (!FieldWhitelist.IsFieldAllowed<T>(field))
-            {
-                throw new ArgumentException($"Campo '{field}' non consentito per l'ordinamento");
-            }
-        }
-
-        return orderBy;
-    }
-
-    private static IEnumerable<string> ExtractFieldNamesFromFilter(string filter)
-    {
-        // Implementazione semplificata per estrarre i nomi dei campi
-        // In un'implementazione reale, potresti usare un parser più sofisticato
-        var fields = new HashSet<string>();
-        
-        // Rimuovi operatori logici e parentesi
-        var cleaned = filter
-            .Replace(" AND ", " ")
-            .Replace(" OR ", " ")
-            .Replace("(", " ")
-            .Replace(")", " ")
-            .Replace("=", " ")
-            .Replace("!=", " ")
-            .Replace(">", " ")
-            .Replace("<", " ")
-            .Replace(">=", " ")
-            .Replace("<=", " ")
-            .Replace("Contains", " ")
-            .Replace("StartsWith", " ")
-            .Replace("EndsWith", " ");
-
-        // Estrai le parole che potrebbero essere nomi di campi
-        var words = cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
-        foreach (var word in words)
-        {
-            // Rimuovi stringhe letterali e numeri
-            if (!word.StartsWith("\"") && !word.StartsWith("'") && 
-                !double.TryParse(word, out _) && !word.Equals("null", StringComparison.OrdinalIgnoreCase))
-            {
-                fields.Add(word);
-            }
-        }
-
-        return fields;
-    }
-
-    private static IEnumerable<string> ExtractFieldNamesFromOrderBy(string orderBy)
-    {
-        var fields = new HashSet<string>();
-        
-        // Rimuovi "asc", "desc", virgole e spazi extra
-        var cleaned = orderBy
-            .Replace(" asc", "", StringComparison.OrdinalIgnoreCase)
-            .Replace(" desc", "", StringComparison.OrdinalIgnoreCase)
-            .Replace(",", " ");
-
-        var words = cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
-        foreach (var word in words)
-        {
-            if (!string.IsNullOrWhiteSpace(word))
-            {
-                fields.Add(word);
-            }
-        }
-
-        return fields;
-    }
 
 
     #endregion

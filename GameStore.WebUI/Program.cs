@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+// Add Radzen.Blazor services
+builder.Services.AddRadzenComponents();
 
 // Registrazione DbContext con interceptor per auditing e soft delete
 builder.Services.AddScoped<AuditableEntitySaveChangesInterceptor>();
