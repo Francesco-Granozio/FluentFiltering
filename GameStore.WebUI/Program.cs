@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using GameStore.WebUI.Data;
 using GameStore.Infrastructure;
 using GameStore.Infrastructure.Interceptors;
+using GameStore.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,27 @@ builder.Services.AddDbContext<ApplicationDbContext>((provider, options) =>
            .AddInterceptors(interceptor);
 });
 
+// Registrazione del seeder
+builder.Services.AddScoped<IDataSeeder, DatabaseSeeder>();
+
 var app = builder.Build();
+
+// Esegui il seeding del database se in ambiente di sviluppo
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
+    
+    try
+    {
+        await seeder.SeedAsync();
+        app.Logger.LogInformation("Seeding del database completato con successo.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Errore durante il seeding del database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
