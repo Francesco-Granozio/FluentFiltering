@@ -1,0 +1,192 @@
+@page "/giochi/modifica/{Id:guid}"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Application.Common
+@inject IGiocoService GiocoService
+@inject NavigationManager Navigation
+
+<PageTitle>Modifica Gioco</PageTitle>
+
+<h3>Modifica Gioco</h3>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else if (gioco != null)
+{
+    <EditForm Model="gioco" OnValidSubmit="SalvaGioco">
+        <DataAnnotationsValidator />
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label for="titolo" class="form-label">Titolo</label>
+                    <InputText id="titolo" @bind-Value="gioco.Titolo" class="form-control" />
+                    <ValidationMessage For="@(() => gioco.Titolo)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="prezzoListino" class="form-label">Prezzo Listino</label>
+                    <InputNumber id="prezzoListino" @bind-Value="gioco.PrezzoListino" class="form-control" />
+                    <ValidationMessage For="@(() => gioco.PrezzoListino)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="dataRilascio" class="form-label">Data Rilascio</label>
+                    <InputDate id="dataRilascio" @bind-Value="gioco.DataRilascio" class="form-control" />
+                    <ValidationMessage For="@(() => gioco.DataRilascio)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="genere" class="form-label">Genere</label>
+                    <InputText id="genere" @bind-Value="gioco.Genere" class="form-control" />
+                    <ValidationMessage For="@(() => gioco.Genere)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="piattaforma" class="form-label">Piattaforma</label>
+                    <InputText id="piattaforma" @bind-Value="gioco.Piattaforma" class="form-control" />
+                    <ValidationMessage For="@(() => gioco.Piattaforma)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="sviluppatore" class="form-label">Sviluppatore</label>
+                    <InputText id="sviluppatore" @bind-Value="gioco.Sviluppatore" class="form-control" />
+                    <ValidationMessage For="@(() => gioco.Sviluppatore)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label for="descrizione" class="form-label">Descrizione</label>
+                    <InputTextArea id="descrizione" @bind-Value="gioco.Descrizione" class="form-control" rows="4" />
+                    <ValidationMessage For="@(() => gioco.Descrizione)" />
+                </div>
+            </div>
+        </div>
+
+        @if (saveErrorMessage != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @saveErrorMessage
+            </div>
+        }
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                Salva
+            </button>
+            <a href="/giochi" class="btn btn-secondary ms-2">Annulla</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private AggiornaGiocoDto? gioco;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string? errorMessage;
+    private string? saveErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CaricaGioco();
+    }
+
+    private async Task CaricaGioco()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var result = await GiocoService.GetByIdAsync(Id);
+            if (result.IsSuccess)
+            {
+                gioco = new AggiornaGiocoDto
+                {
+                    Id = result.Value.Id,
+                    Titolo = result.Value.Titolo,
+                    Descrizione = result.Value.Descrizione,
+                    PrezzoListino = result.Value.PrezzoListino,
+                    DataRilascio = result.Value.DataRilascio,
+                    Genere = result.Value.Genere,
+                    Piattaforma = result.Value.Piattaforma,
+                    Sviluppatore = result.Value.Sviluppatore
+                };
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SalvaGioco()
+    {
+        try
+        {
+            isSaving = true;
+            saveErrorMessage = null;
+
+            if (gioco != null)
+            {
+                var result = await GiocoService.UpdateAsync(gioco);
+                if (result.IsSuccess)
+                {
+                    Navigation.NavigateTo("/giochi");
+                }
+                else
+                {
+                    saveErrorMessage = result.Error.Message;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            saveErrorMessage = $"Errore durante il salvataggio: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
