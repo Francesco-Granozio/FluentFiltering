@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Radzen;
-using CurrieTechnologies.Razor.SweetAlert2; // Added for SweetAlert2
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +24,6 @@ builder.Services.AddSingleton<WeatherForecastService>();
 // Add Radzen.Blazor services
 builder.Services.AddRadzenComponents();
 
-// Add SweetAlert2 services
-builder.Services.AddSweetAlert2();
 
 // Registrazione DbContext con interceptor per auditing e soft delete
 builder.Services.AddScoped<AuditableEntitySaveChangesInterceptor>();

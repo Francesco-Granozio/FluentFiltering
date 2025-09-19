@@ -5,7 +5,8 @@
 @using GameStore.Application.Common
 @inject IGiocoService GiocoService
 @inject NavigationManager Navigation
-@inject SweetAlertService Swal
+@inject DialogService DialogService
+@inject NotificationService NotificationService
 
 <PageTitle>Gestione Giochi</PageTitle>
 
@@ -203,71 +204,64 @@
     {
         try
         {
-            // Mostra dialog di conferma con SweetAlert2
-            var result = await Swal.FireAsync(new SweetAlertOptions
-            {
-                Title = "Conferma Cancellazione",
-                Text = "Sei sicuro di voler cancellare questo gioco? Questa azione non può essere annullata.",
-                Icon = SweetAlertIcon.Warning,
-                ShowCancelButton = true,
-                ConfirmButtonText = "Sì, cancella",
-                CancelButtonText = "Annulla",
-                ConfirmButtonColor = "#d33",
-                CancelButtonColor = "#3085d6"
-            });
+            // Mostra dialog di conferma con Radzen Dialog
+            var result = await DialogService.Confirm(
+                "Sei sicuro di voler cancellare questo gioco? Questa azione non può essere annullata.",
+                "Conferma Cancellazione",
+                new ConfirmOptions() 
+                { 
+                    OkButtonText = "Sì, cancella", 
+                    CancelButtonText = "Annulla",
+                    Style = "min-width: 400px"
+                }
+            );
 
-            if (!string.IsNullOrEmpty(result.Value))
+            if (result == true)
             {
-                // Mostra loading
-                await Swal.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Cancellazione in corso...",
-                    AllowOutsideClick = false,
-                    AllowEscapeKey = false,
-                    ShowConfirmButton = false,
-                    DidOpen = new SweetAlertCallback(() => Task.CompletedTask)
-                });
-
                 var deleteResult = await GiocoService.DeleteAsync(id);
-
-                // Chiudi loading automaticamente
-                await Swal.CloseAsync();
 
                 if (deleteResult.IsSuccess)
                 {
-                    // Mostra successo
-                    await Swal.FireAsync(
-                        "Gioco Cancellato",
-                        "Il gioco è stato cancellato con successo.",
-                        SweetAlertIcon.Success
-                    );
+                    // Mostra notifica di successo
+                    NotificationService.Notify(new NotificationMessage 
+                    { 
+                        Severity = NotificationSeverity.Success, 
+                        Summary = "Gioco Cancellato",
+                        Detail = "Il gioco è stato cancellato con successo.",
+                        Duration = 4000,
+                        ShowProgress = true
+                    });
                     
                     // Ricarica la griglia
                     await LoadInitialData();
                 }
                 else
                 {
-                    // Mostra errore
-                    await Swal.FireAsync(
-                        "Errore",
-                        deleteResult.Error.Message,
-                        SweetAlertIcon.Error
-                    );
+                    // Mostra notifica di errore
+                    NotificationService.Notify(new NotificationMessage 
+                    { 
+                        Severity = NotificationSeverity.Error, 
+                        Summary = "Errore",
+                        Detail = deleteResult.Error.Message,
+                        Duration = 6000,
+                        ShowProgress = true
+                    });
                 }
             }
         }
         catch (Exception ex)
         {
-            // Chiudi loading se presente
-            await Swal.CloseAsync();
-            
-            // Mostra errore
-            await Swal.FireAsync(
-                "Errore",
-                $"Errore durante la cancellazione: {ex.Message}",
-                SweetAlertIcon.Error
-            );
+            // Mostra notifica di errore
+            NotificationService.Notify(new NotificationMessage 
+            { 
+                Severity = NotificationSeverity.Error, 
+                Summary = "Errore",
+                Detail = $"Errore durante la cancellazione: {ex.Message}",
+                Duration = 6000,
+                ShowProgress = true
+            });
         }
     }
+
 
 }

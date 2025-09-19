@@ -21,12 +21,12 @@ public abstract class BaseController : ControllerBase
             return Ok(result.Value);
         }
 
-        return result.Error.Code switch
+        return result.Error.Type switch
         {
-            "NOT_FOUND" => NotFound(new { error = result.Error.Message, code = result.Error.Code }),
-            "VALIDATION_FAILED" => BadRequest(new { error = result.Error.Message, code = result.Error.Code }),
-            "UNAUTHORIZED" => Unauthorized(new { error = result.Error.Message, code = result.Error.Code }),
-            _ => StatusCode(500, new { error = result.Error.Message, code = result.Error.Code })
+            ErrorType.NotFound => NotFound(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            ErrorType.ValidationFailed => BadRequest(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            ErrorType.Unauthorized => Unauthorized(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            _ => StatusCode(500, new { error = result.Error.Message, type = result.Error.Type.ToString() })
         };
     }
 
@@ -42,12 +42,12 @@ public abstract class BaseController : ControllerBase
             return Ok(new { message = "Operazione completata con successo" });
         }
 
-        return result.Error.Code switch
+        return result.Error.Type switch
         {
-            "NOT_FOUND" => NotFound(new { error = result.Error.Message, code = result.Error.Code }),
-            "VALIDATION_FAILED" => BadRequest(new { error = result.Error.Message, code = result.Error.Code }),
-            "UNAUTHORIZED" => Unauthorized(new { error = result.Error.Message, code = result.Error.Code }),
-            _ => StatusCode(500, new { error = result.Error.Message, code = result.Error.Code })
+            ErrorType.NotFound => NotFound(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            ErrorType.ValidationFailed => BadRequest(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            ErrorType.Unauthorized => Unauthorized(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            _ => StatusCode(500, new { error = result.Error.Message, type = result.Error.Type.ToString() })
         };
     }
 
@@ -64,12 +64,12 @@ public abstract class BaseController : ControllerBase
             return Ok(result.Value);
         }
 
-        return result.Error.Code switch
+        return result.Error.Type switch
         {
-            "NOT_FOUND" => NotFound(new { error = result.Error.Message, code = result.Error.Code }),
-            "VALIDATION_FAILED" => BadRequest(new { error = result.Error.Message, code = result.Error.Code }),
-            "UNAUTHORIZED" => Unauthorized(new { error = result.Error.Message, code = result.Error.Code }),
-            _ => StatusCode(500, new { error = result.Error.Message, code = result.Error.Code })
+            ErrorType.NotFound => NotFound(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            ErrorType.ValidationFailed => BadRequest(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            ErrorType.Unauthorized => Unauthorized(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
+            _ => StatusCode(500, new { error = result.Error.Message, type = result.Error.Type.ToString() })
         };
     }
 }

@@ -1,35 +1,48 @@
 namespace GameStore.Application.Common;
 
 /// <summary>
-/// Classe che rappresenta un errore dell'applicazione
+/// Enumerato per i tipi di errore dell'applicazione
 /// </summary>
-public class Error
+public enum ErrorType
 {
-    public string Code { get; }
-    public string Message { get; }
+    Success,
+    NotFound,
+    ValidationFailed,
+    DatabaseError,
+    UnexpectedError,
+    Unauthorized,
+    UsernameAlreadyExists,
+    EmailAlreadyExists,
+    InvalidCredentials,
+    InvalidPrice,
+    InvalidReleaseDate,
+    InvalidQuantity,
+    DuplicateReview,
+    InvalidScore,
+    InvalidPurchase
+}
 
-    public Error(string code, string message)
-    {
-        Code = code;
-        Message = message;
-    }
-
-    public static Error Create(string code, string message) => new(code, message);
+/// <summary>
+/// Record che rappresenta un errore dell'applicazione
+/// </summary>
+public record Error(ErrorType Type, string Message)
+{
+    public static Error Create(ErrorType type, string message) => new(type, message);
 
     public static Error NotFound(string entityName) => 
-        new("NOT_FOUND", $"{entityName} non trovato");
+        new(ErrorType.NotFound, $"{entityName} non trovato");
 
     public static Error ValidationFailed(string message) => 
-        new("VALIDATION_FAILED", message);
+        new(ErrorType.ValidationFailed, message);
 
     public static Error DatabaseError(string message) => 
-        new("DATABASE_ERROR", message);
+        new(ErrorType.DatabaseError, message);
 
     public static Error UnexpectedError(string message) => 
-        new("UNEXPECTED_ERROR", message);
+        new(ErrorType.UnexpectedError, message);
 
     public static Error Unauthorized() => 
-        new("UNAUTHORIZED", "Non autorizzato");
+        new(ErrorType.Unauthorized, "Non autorizzato");
 }
 
 /// <summary>
@@ -55,9 +68,9 @@ public static class Errors
     public static class Utenti
     {
         public static readonly Error NotFound = Error.NotFound("Utente");
-        public static readonly Error UsernameAlreadyExists = Error.Create("USERNAME_EXISTS", "Username già utilizzato");
-        public static readonly Error EmailAlreadyExists = Error.Create("EMAIL_EXISTS", "Email già utilizzata");
-        public static readonly Error InvalidCredentials = Error.Create("INVALID_CREDENTIALS", "Credenziali non valide");
+        public static readonly Error UsernameAlreadyExists = Error.Create(ErrorType.UsernameAlreadyExists, "Username già utilizzato");
+        public static readonly Error EmailAlreadyExists = Error.Create(ErrorType.EmailAlreadyExists, "Email già utilizzata");
+        public static readonly Error InvalidCredentials = Error.Create(ErrorType.InvalidCredentials, "Credenziali non valide");
     }
 
     /// <summary>
@@ -66,8 +79,8 @@ public static class Errors
     public static class Giochi
     {
         public static readonly Error NotFound = Error.NotFound("Gioco");
-        public static readonly Error InvalidPrice = Error.Create("INVALID_PRICE", "Prezzo non valido");
-        public static readonly Error InvalidReleaseDate = Error.Create("INVALID_RELEASE_DATE", "Data di rilascio non valida");
+        public static readonly Error InvalidPrice = Error.Create(ErrorType.InvalidPrice, "Prezzo non valido");
+        public static readonly Error InvalidReleaseDate = Error.Create(ErrorType.InvalidReleaseDate, "Data di rilascio non valida");
     }
 
     /// <summary>
@@ -78,8 +91,8 @@ public static class Errors
         public static readonly Error NotFound = Error.NotFound("Acquisto");
         public static readonly Error UserNotFound = Error.NotFound("Utente");
         public static readonly Error GameNotFound = Error.NotFound("Gioco");
-        public static readonly Error InvalidQuantity = Error.Create("INVALID_QUANTITY", "Quantità non valida");
-        public static readonly Error InvalidPrice = Error.Create("INVALID_PRICE", "Prezzo non valido");
+        public static readonly Error InvalidQuantity = Error.Create(ErrorType.InvalidQuantity, "Quantità non valida");
+        public static readonly Error InvalidPrice = Error.Create(ErrorType.InvalidPrice, "Prezzo non valido");
     }
 
     /// <summary>
@@ -90,8 +103,8 @@ public static class Errors
         public static readonly Error NotFound = Error.NotFound("Recensione");
         public static readonly Error UserNotFound = Error.NotFound("Utente");
         public static readonly Error GameNotFound = Error.NotFound("Gioco");
-        public static readonly Error DuplicateReview = Error.Create("DUPLICATE_REVIEW", "Recensione duplicata per questo utente e gioco");
-        public static readonly Error InvalidScore = Error.Create("INVALID_SCORE", "Punteggio non valido (deve essere tra 1 e 5)");
-        public static readonly Error InvalidPurchase = Error.Create("INVALID_PURCHASE", "Acquisto non valido per questa recensione");
+        public static readonly Error DuplicateReview = Error.Create(ErrorType.DuplicateReview, "Recensione duplicata per questo utente e gioco");
+        public static readonly Error InvalidScore = Error.Create(ErrorType.InvalidScore, "Punteggio non valido (deve essere tra 1 e 5)");
+        public static readonly Error InvalidPurchase = Error.Create(ErrorType.InvalidPurchase, "Acquisto non valido per questa recensione");
     }
 }
