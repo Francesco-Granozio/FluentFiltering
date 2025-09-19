@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace GameStore.Infrastructure.Common;
 
@@ -18,11 +19,50 @@ public static class DynamicLinqHelper
         if (string.IsNullOrWhiteSpace(filter))
             return string.Empty;
 
-        // Per ora, disabilitiamo la validazione per permettere tutti i tipi di filtraggio
-        // Rimuovi solo i caratteri più pericolosi ma mantieni la flessibilità
+        // Rimuovi caratteri pericolosi
         var sanitizedFilter = Regex.Replace(filter, @"[;{}]", "");
         
+        // Converti le date dal formato italiano (dd/MM/yyyy) al formato standard (yyyy-MM-dd)
+        sanitizedFilter = ConvertItalianDatesToStandard(sanitizedFilter);
+        
         return sanitizedFilter;
+    }
+
+    /// <summary>
+    /// Converte le date dal formato italiano al formato standard per Dynamic LINQ
+    /// </summary>
+    /// <param name="filter">Filtro contenente potenziali date</param>
+    /// <returns>Filtro con date convertite</returns>
+    private static string ConvertItalianDatesToStandard(string filter)
+    {
+        // Pattern per riconoscere confronti di uguaglianza con date italiane
+        // Es: DataRegistrazione == "15/09/2025 00:00:00"
+        var dateEqualityPattern = @"(\w+)\s*==\s*(['""])(\d{1,2}/\d{1,2}/\d{4})(?:\s+\d{1,2}:\d{2}:\d{2})?\2";
+        
+        return Regex.Replace(filter, dateEqualityPattern, match =>
+        {
+            var fieldName = match.Groups[1].Value; // Nome del campo (es: DataRegistrazione)
+            var quote = match.Groups[2].Value; // Virgolette usate
+            var italianDateStr = match.Groups[3].Value; // Solo la parte data (dd/MM/yyyy)
+            
+            // Prova a parsare la data in formato italiano
+            if (DateTime.TryParseExact(italianDateStr, 
+                "dd/MM/yyyy", 
+                CultureInfo.InvariantCulture, 
+                DateTimeStyles.None, 
+                out DateTime date))
+            {
+                // Converte in un range che copre tutto il giorno
+                var startOfDay = date.Date;
+                var endOfDay = date.Date.AddDays(1);
+                
+                // Sostituisce con un range: field >= startOfDay AND field < endOfDay
+                return $"({fieldName} >= {quote}{startOfDay:yyyy-MM-dd}T00:00:00.0000000{quote} AND {fieldName} < {quote}{endOfDay:yyyy-MM-dd}T00:00:00.0000000{quote})";
+            }
+            
+            // Se non riesce a parsare, lascia il valore originale
+            return match.Value;
+        });
     }
 
     /// <summary>

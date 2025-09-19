@@ -15,6 +15,7 @@
         <h3>Gestione Recensioni</h3>
     </div>
     <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="me-2" />
         <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuova Recensione" Click="AggiungiRecensione" />
     </div>
 </div>
@@ -30,7 +31,8 @@
                 AllowPaging="true" 
                 AllowSorting="true"
                 AllowFiltering="true"
-                FilterMode="FilterMode.Advanced"
+                AllowFilteringByColumn="true"
+                FilterMode="FilterMode.SimpleWithMenu"
                 PageSize="20"
                 Count="@totalCount"
                 PagerHorizontalAlign="HorizontalAlign.Left"
@@ -40,44 +42,44 @@
                 LoadData="@LoadData">
     
     <Columns>
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="UtenteUsername" Title="Utente" Width="150px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="UtenteUsername" Title="Utente" Width="150px" Filterable="true">
             <Template Context="recensione">
                 <RadzenLabel Text="@recensione.UtenteUsername" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="GiocoTitolo" Title="Gioco" Width="200px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="GiocoTitolo" Title="Gioco" Width="200px" Filterable="true">
             <Template Context="recensione">
                 <RadzenLabel Text="@recensione.GiocoTitolo" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="Punteggio" Title="Punteggio" Width="100px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="Punteggio" Title="Punteggio" Width="100px" Filterable="true">
             <Template Context="recensione">
                 <RadzenBadge Text="@recensione.Punteggio.ToString()" 
                            BadgeStyle="@GetPunteggioStyle(recensione.Punteggio)" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="Titolo" Title="Titolo" Width="200px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="Titolo" Title="Titolo" Width="200px" Filterable="true">
             <Template Context="recensione">
                 <RadzenLabel Text="@recensione.Titolo" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="Corpo" Title="Recensione" Width="300px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="Corpo" Title="Recensione" Width="300px" Filterable="true">
             <Template Context="recensione">
                 <RadzenLabel Text="@(recensione.Corpo?.Length > 50 ? recensione.Corpo.Substring(0, 50) + "..." : recensione.Corpo)" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="DataRecensione" Title="Data Recensione" Width="120px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="DataRecensione" Title="Data Recensione" Width="120px" Filterable="true">
             <Template Context="recensione">
                 <RadzenLabel Text="@recensione.DataRecensione.ToString("dd/MM/yyyy")" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="RecensioneDto" Property="IsRecensioneVerificata" Title="Verificata" Width="100px">
+        <RadzenDataGridColumn TItem="RecensioneDto" Property="IsRecensioneVerificata" Title="Verificata" Width="100px" Filterable="true">
             <Template Context="recensione">
                 <RadzenCheckBox @bind-Value="@recensione.IsRecensioneVerificata" 
                                Disabled="true" />
@@ -102,7 +104,7 @@
 
 @code {
     private RadzenDataGrid<RecensioneDto>? grid;
-    private IEnumerable<RecensioneDto> recensioni = new List<RecensioneDto>();
+    private List<RecensioneDto> recensioni = new List<RecensioneDto>();
     private bool isLoading = false;
     private string? errorMessage;
     private int totalCount = 0;
@@ -129,7 +131,7 @@
             var result = await RecensioneService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                recensioni = result.Value.Items;
+                recensioni = result.Value.Items.ToList();
                 totalCount = result.Value.TotalItems;
                 Console.WriteLine($"Loaded {recensioni.Count()} reviews, total: {totalCount}");
             }
@@ -183,7 +185,7 @@
             var result = await RecensioneService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                recensioni = result.Value.Items;
+                recensioni = result.Value.Items.ToList();
                 totalCount = result.Value.TotalItems;
             }
             else
@@ -208,6 +210,28 @@
     private void AggiungiRecensione()
     {
         Navigation.NavigateTo("/recensioni/nuovo");
+    }
+
+    private async Task ClearFilters()
+    {
+        if (grid != null)
+        {
+            // Reset the grid and clear all filters
+            grid.Reset(false, false);
+            
+            // Clear filters on each column
+            grid.ColumnsCollection.ToList().ForEach(column =>
+            {
+                column.ClearFilters();
+            });
+            
+            // Clear the data source to force reload
+            recensioni.Clear();
+            
+            // Reload the grid
+            await grid.Reload();
+            StateHasChanged();
+        }
     }
 
     private void ModificaRecensione(Guid id)

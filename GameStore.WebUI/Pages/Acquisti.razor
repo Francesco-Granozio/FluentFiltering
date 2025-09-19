@@ -4,6 +4,8 @@
 @using GameStore.Domain.DTOs.Common
 @using GameStore.Application.Common
 @inject IAcquistoService AcquistoService
+@inject IUtenteService UtenteService
+@inject IGiocoService GiocoService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
 @inject NotificationService NotificationService
@@ -15,14 +17,54 @@
         <h3>Gestione Acquisti</h3>
     </div>
     <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="me-2" />
         <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuovo Acquisto" Click="AggiungiAcquisto" />
     </div>
 </div>
 
-@if (errorMessage != null)
+@if (isLoadingData)
 {
-    <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+        </div>
+    </div>
 }
+else
+{
+    @if (errorMessage != null)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
+    }
+
+    <div class="row mb-3">
+    <div class="col-md-4">
+        <label for="utenteFilter" class="form-label">Filtra per Utente</label>
+        <select id="utenteFilter" @onchange="OnUtenteFilterChanged" class="form-select">
+            <option value="">Tutti gli utenti</option>
+            @foreach (var utente in utenti)
+            {
+                <option value="@utente.Id">@utente.Username - @utente.NomeCompleto</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="giocoFilter" class="form-label">Filtra per Gioco</label>
+        <select id="giocoFilter" @onchange="OnGiocoFilterChanged" class="form-select">
+            <option value="">Tutti i giochi</option>
+            @foreach (var gioco in giochi)
+            {
+                <option value="@gioco.Id">@gioco.Titolo</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">&nbsp;</label>
+        <div>
+            <!-- Pulsante spostato nella barra superiore -->
+        </div>
+    </div>
+</div>
 
 <RadzenDataGrid @ref="grid" 
                 Data="@acquisti" 
@@ -30,7 +72,8 @@
                 AllowPaging="true" 
                 AllowSorting="true"
                 AllowFiltering="true"
-                FilterMode="FilterMode.Advanced"
+                AllowFilteringByColumn="true"
+                FilterMode="FilterMode.SimpleWithMenu"
                 PageSize="20"
                 Count="@totalCount"
                 PagerHorizontalAlign="HorizontalAlign.Left"
@@ -40,43 +83,43 @@
                 LoadData="@LoadData">
     
     <Columns>
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="UtenteUsername" Title="Utente" Width="150px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="UtenteUsername" Title="Utente" Width="150px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.UtenteUsername" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="GiocoTitolo" Title="Gioco" Width="200px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="GiocoTitolo" Title="Gioco" Width="200px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.GiocoTitolo" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.DataAcquisto.ToString("dd/MM/yyyy")" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.PrezzoPagato.ToString("C")" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="Quantita" Title="Quantità" Width="100px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="Quantita" Title="Quantità" Width="100px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.Quantita.ToString()" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="150px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="150px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.MetodoPagamento" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px">
+        <RadzenDataGridColumn TItem="AcquistoDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px" Filterable="true">
             <Template Context="acquisto">
                 <RadzenLabel Text="@acquisto.CodiceSconto" />
             </Template>
@@ -97,17 +140,59 @@
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
+}
 
 @code {
     private RadzenDataGrid<AcquistoDto>? grid;
-    private IEnumerable<AcquistoDto> acquisti = new List<AcquistoDto>();
+    private List<AcquistoDto> acquisti = new List<AcquistoDto>();
+    private List<UtenteDto> utenti = new();
+    private List<GiocoDto> giochi = new();
     private bool isLoading = false;
+    private bool isLoadingData = true;
     private string? errorMessage;
     private int totalCount = 0;
+    private Guid? selectedUtenteId;
+    private Guid? selectedGiocoId;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadInitialData();
+        await CaricaDati();
+    }
+
+    private async Task CaricaDati()
+    {
+        try
+        {
+            isLoadingData = true;
+            errorMessage = null;
+
+            // Carica utenti
+            var utentiRequest = new FilterRequest { PageSize = 1000 };
+            var utentiResult = await UtenteService.GetPagedAsync(utentiRequest);
+            if (utentiResult.IsSuccess)
+            {
+                utenti = utentiResult.Value.Items.ToList();
+            }
+
+            // Carica giochi
+            var giochiRequest = new FilterRequest { PageSize = 1000 };
+            var giochiResult = await GiocoService.GetPagedAsync(giochiRequest);
+            if (giochiResult.IsSuccess)
+            {
+                giochi = giochiResult.Value.Items.ToList();
+            }
+
+            // Carica acquisti iniziali
+            await LoadInitialData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento dei dati: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingData = false;
+        }
     }
 
     private async Task LoadInitialData()
@@ -121,13 +206,13 @@
             {
                 PageNumber = 1,
                 PageSize = 20,
-                OrderBy = "DataCreazione desc"
+                OrderBy = "DataAcquisto desc"
             };
 
             var result = await AcquistoService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                acquisti = result.Value.Items;
+                acquisti = result.Value.Items.ToList();
                 totalCount = result.Value.TotalItems;
                 Console.WriteLine($"Loaded {acquisti.Count()} purchases, total: {totalCount}");
             }
@@ -158,17 +243,52 @@
             isLoading = true;
             errorMessage = null;
 
+            // Gestisce l'ordinamento
+            string orderBy = "DataAcquisto desc"; // default
+            if (!string.IsNullOrEmpty(args.OrderBy))
+            {
+                orderBy = args.OrderBy;
+            }
+
+            // Gestisce i filtri
+            var filterParts = new List<string>();
+            if (args.Filters != null)
+            {
+                foreach (var filter in args.Filters)
+                {
+                    if (filter.FilterValue != null && !string.IsNullOrEmpty(filter.FilterValue.ToString()))
+                    {
+                        var filterValue = filter.FilterValue.ToString();
+                        var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filterValue);
+                        filterParts.Add(filterExpression);
+                    }
+                }
+            }
+
+            // Aggiunge filtri personalizzati
+            if (selectedUtenteId.HasValue)
+            {
+                filterParts.Add($"UtenteId == \"{selectedUtenteId.Value}\"");
+            }
+            if (selectedGiocoId.HasValue)
+            {
+                filterParts.Add($"GiocoId == \"{selectedGiocoId.Value}\"");
+            }
+
             var request = new FilterRequest
             {
                 PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
                 PageSize = args.Top ?? 20,
-                OrderBy = "DataCreazione desc"
+                OrderBy = orderBy,
+                Filter = filterParts.Any() ? string.Join(" AND ", filterParts) : null
             };
+
+            Console.WriteLine($"Loading data: Page={request.PageNumber}, Size={request.PageSize}, OrderBy={request.OrderBy}, Filter={request.Filter}");
 
             var result = await AcquistoService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                acquisti = result.Value.Items;
+                acquisti = result.Value.Items.ToList();
                 totalCount = result.Value.TotalItems;
             }
             else
@@ -193,6 +313,86 @@
     private void AggiungiAcquisto()
     {
         Navigation.NavigateTo("/acquisti/nuovo");
+    }
+
+    private async Task OnUtenteFilterChanged(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            selectedUtenteId = null;
+        }
+        else if (Guid.TryParse(e.Value.ToString(), out var utenteId))
+        {
+            selectedUtenteId = utenteId;
+        }
+        
+        if (grid != null)
+        {
+            await grid.Reload();
+        }
+    }
+
+    private async Task OnGiocoFilterChanged(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            selectedGiocoId = null;
+        }
+        else if (Guid.TryParse(e.Value.ToString(), out var giocoId))
+        {
+            selectedGiocoId = giocoId;
+        }
+        
+        if (grid != null)
+        {
+            await grid.Reload();
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+        // Reset dropdown filters
+        selectedUtenteId = null;
+        selectedGiocoId = null;
+        
+        if (grid != null)
+        {
+            // Reset the grid and clear all filters
+            grid.Reset(false, false);
+            
+            // Clear filters on each column
+            grid.ColumnsCollection.ToList().ForEach(column =>
+            {
+                column.ClearFilters();
+            });
+            
+            // Clear the data source to force reload
+            acquisti.Clear();
+            
+            // Reload the grid
+            await grid.Reload();
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Costruisce un'espressione di filtro basata sull'operatore
+    /// </summary>
+    private string BuildFilterExpression(string property, string filterOperator, string filterValue)
+    {
+        return filterOperator?.ToLower() switch
+        {
+            "contains" => $"{property}.Contains(\"{filterValue}\")",
+            "startswith" => $"{property}.StartsWith(\"{filterValue}\")",
+            "endswith" => $"{property}.EndsWith(\"{filterValue}\")",
+            "eq" or "equals" => $"{property} == \"{filterValue}\"",
+            "ne" or "not equals" => $"{property} != \"{filterValue}\"",
+            "gt" or "greater than" => $"{property} > \"{filterValue}\"",
+            "ge" or "greater than or equal" => $"{property} >= \"{filterValue}\"",
+            "lt" or "less than" => $"{property} < \"{filterValue}\"",
+            "le" or "less than or equal" => $"{property} <= \"{filterValue}\"",
+            _ => $"{property} == \"{filterValue}\"" // default
+        };
     }
 
     private void ModificaAcquisto(Guid id)

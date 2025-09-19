@@ -15,6 +15,7 @@
         <h3>Gestione Utenti</h3>
     </div>
     <div class="col-auto">
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="me-2" />
         <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Aggiungi Utente" Click="AggiungiUtente" />
     </div>
 </div>
@@ -31,7 +32,8 @@
                 AllowPaging="true" 
                 AllowSorting="true"
                 AllowFiltering="true"
-                FilterMode="FilterMode.Advanced"
+                AllowFilteringByColumn="true"
+                FilterMode="FilterMode.SimpleWithMenu"
                 PageSize="20"
                 Count="@totalCount"
                 PagerHorizontalAlign="HorizontalAlign.Left"
@@ -41,31 +43,31 @@
                 LoadData="@LoadData">
     
     <Columns>
-        <RadzenDataGridColumn TItem="UtenteDto" Property="Username" Title="Username" Width="150px">
+        <RadzenDataGridColumn TItem="UtenteDto" Property="Username" Title="Username" Width="150px" Filterable="true">
             <Template Context="utente">
                 <RadzenLabel Text="@utente.Username" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="UtenteDto" Property="Email" Title="Email" Width="200px">
+        <RadzenDataGridColumn TItem="UtenteDto" Property="Email" Title="Email" Width="200px" Filterable="true">
             <Template Context="utente">
                 <RadzenLabel Text="@utente.Email" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="UtenteDto" Property="NomeCompleto" Title="Nome Completo" Width="200px">
+        <RadzenDataGridColumn TItem="UtenteDto" Property="NomeCompleto" Title="Nome Completo" Width="200px" Filterable="true">
             <Template Context="utente">
                 <RadzenLabel Text="@utente.NomeCompleto" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="UtenteDto" Property="Paese" Title="Paese" Width="120px">
+        <RadzenDataGridColumn TItem="UtenteDto" Property="Paese" Title="Paese" Width="120px" Filterable="true">
             <Template Context="utente">
                 <RadzenLabel Text="@utente.Paese" />
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="UtenteDto" Property="DataRegistrazione" Title="Data Registrazione" Width="150px">
+        <RadzenDataGridColumn TItem="UtenteDto" Property="DataRegistrazione" Title="Data Registrazione" Width="150px" Filterable="true">
             <Template Context="utente">
                 <RadzenLabel Text="@utente.DataRegistrazione.ToString("dd/MM/yyyy")" />
             </Template>
@@ -89,7 +91,7 @@
 
 @code {
     private RadzenDataGrid<UtenteDto>? grid;
-    private IEnumerable<UtenteDto> utenti = new List<UtenteDto>();
+    private List<UtenteDto> utenti = new List<UtenteDto>();
     private bool isLoading = false;
     private string? errorMessage;
     private int totalCount = 0;
@@ -116,7 +118,7 @@
             var result = await UtenteService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                utenti = result.Value.Items;
+                utenti = result.Value.Items.ToList();
                 totalCount = result.Value.TotalItems;
                 errorMessage = null;
                 Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
@@ -183,7 +185,7 @@
             var result = await UtenteService.GetPagedAsync(request);
             if (result.IsSuccess)
             {
-                utenti = result.Value.Items;
+                utenti = result.Value.Items.ToList();
                 totalCount = result.Value.TotalItems;
                 errorMessage = null;
                 Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
@@ -211,6 +213,28 @@
     private void AggiungiUtente()
     {
         Navigation.NavigateTo("/utenti/nuovo");
+    }
+
+    private async Task ClearFilters()
+    {
+        if (grid != null)
+        {
+            // Reset the grid and clear all filters
+            grid.Reset(false, false);
+            
+            // Clear filters on each column
+            grid.ColumnsCollection.ToList().ForEach(column =>
+            {
+                column.ClearFilters();
+            });
+            
+            // Clear the data source to force reload
+            utenti.Clear();
+            
+            // Reload the grid
+            await grid.Reload();
+            StateHasChanged();
+        }
     }
 
     /// <summary>

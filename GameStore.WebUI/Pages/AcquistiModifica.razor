@@ -1,0 +1,226 @@
+@page "/acquisti/modifica/{Id:guid}"
+@using GameStore.Application.DTOs
+@using GameStore.Application.Services
+@using GameStore.Application.Common
+@using GameStore.Domain.DTOs.Common
+@inject IAcquistoService AcquistoService
+@inject IUtenteService UtenteService
+@inject IGiocoService GiocoService
+@inject NavigationManager Navigation
+
+<PageTitle>Modifica Acquisto</PageTitle>
+
+<h3>Modifica Acquisto</h3>
+
+@if (isLoadingData)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else if (acquisto != null)
+{
+    <EditForm Model="acquisto" OnValidSubmit="SalvaAcquisto">
+        <DataAnnotationsValidator />
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="utenteId" class="form-label">Utente</label>
+                    <InputSelect id="utenteId" @bind-Value="acquisto.UtenteId" class="form-select">
+                        <option value="">Seleziona un utente</option>
+                        @foreach (var utente in utenti)
+                        {
+                            <option value="@utente.Id">@utente.Username - @utente.NomeCompleto</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => acquisto.UtenteId)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="giocoId" class="form-label">Gioco</label>
+                    <InputSelect id="giocoId" @bind-Value="acquisto.GiocoId" class="form-select">
+                        <option value="">Seleziona un gioco</option>
+                        @foreach (var gioco in giochi)
+                        {
+                            <option value="@gioco.Id">@gioco.Titolo - @gioco.PrezzoListino.ToString("C")</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => acquisto.GiocoId)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="dataAcquisto" class="form-label">Data Acquisto</label>
+                    <InputDate id="dataAcquisto" @bind-Value="acquisto.DataAcquisto" class="form-control" />
+                    <ValidationMessage For="@(() => acquisto.DataAcquisto)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="prezzoPagato" class="form-label">Prezzo Pagato</label>
+                    <InputNumber id="prezzoPagato" @bind-Value="acquisto.PrezzoPagato" class="form-control" />
+                    <ValidationMessage For="@(() => acquisto.PrezzoPagato)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="quantita" class="form-label">Quantità</label>
+                    <InputNumber id="quantita" @bind-Value="acquisto.Quantita" class="form-control" />
+                    <ValidationMessage For="@(() => acquisto.Quantita)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="metodoPagamento" class="form-label">Metodo Pagamento</label>
+                    <InputText id="metodoPagamento" @bind-Value="acquisto.MetodoPagamento" class="form-control" />
+                    <ValidationMessage For="@(() => acquisto.MetodoPagamento)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label for="codiceSconto" class="form-label">Codice Sconto</label>
+                    <InputText id="codiceSconto" @bind-Value="acquisto.CodiceSconto" class="form-control" />
+                    <ValidationMessage For="@(() => acquisto.CodiceSconto)" />
+                </div>
+            </div>
+        </div>
+
+        @if (saveErrorMessage != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @saveErrorMessage
+            </div>
+        }
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                Salva
+            </button>
+            <a href="/acquisti" class="btn btn-secondary ms-2">Annulla</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private AggiornaAcquistoDto? acquisto;
+    private List<UtenteDto> utenti = new();
+    private List<GiocoDto> giochi = new();
+    private bool isSaving = false;
+    private bool isLoadingData = true;
+    private string? errorMessage;
+    private string? saveErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CaricaDati();
+    }
+
+    private async Task CaricaDati()
+    {
+        try
+        {
+            isLoadingData = true;
+            errorMessage = null;
+
+            // Carica utenti
+            var utentiRequest = new FilterRequest { PageSize = 1000 };
+            var utentiResult = await UtenteService.GetPagedAsync(utentiRequest);
+            if (utentiResult.IsSuccess)
+            {
+                utenti = utentiResult.Value.Items.ToList();
+            }
+
+            // Carica giochi
+            var giochiRequest = new FilterRequest { PageSize = 1000 };
+            var giochiResult = await GiocoService.GetPagedAsync(giochiRequest);
+            if (giochiResult.IsSuccess)
+            {
+                giochi = giochiResult.Value.Items.ToList();
+            }
+
+            // Carica acquisto
+            var acquistoResult = await AcquistoService.GetByIdAsync(Id);
+            if (acquistoResult.IsSuccess)
+            {
+                acquisto = new AggiornaAcquistoDto
+                {
+                    Id = acquistoResult.Value.Id,
+                    UtenteId = acquistoResult.Value.UtenteId,
+                    GiocoId = acquistoResult.Value.GiocoId,
+                    DataAcquisto = acquistoResult.Value.DataAcquisto,
+                    PrezzoPagato = acquistoResult.Value.PrezzoPagato,
+                    Quantita = acquistoResult.Value.Quantita,
+                    MetodoPagamento = acquistoResult.Value.MetodoPagamento,
+                    CodiceSconto = acquistoResult.Value.CodiceSconto
+                };
+            }
+            else
+            {
+                errorMessage = acquistoResult.Error.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingData = false;
+        }
+    }
+
+    private async Task SalvaAcquisto()
+    {
+        try
+        {
+            isSaving = true;
+            saveErrorMessage = null;
+
+            if (acquisto != null)
+            {
+                var result = await AcquistoService.UpdateAsync(acquisto);
+                if (result.IsSuccess)
+                {
+                    Navigation.NavigateTo("/acquisti");
+                }
+                else
+                {
+                    saveErrorMessage = result.Error.Message;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            saveErrorMessage = $"Errore durante il salvataggio: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
