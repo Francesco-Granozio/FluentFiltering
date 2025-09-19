@@ -65,28 +65,5 @@ public class Result<T> : Result
     public static implicit operator Result<T>(T value) => Success(value);
     public static implicit operator Result<T>(Error error) => Failure(error);
 
-    /// <summary>
-    /// Esegue una funzione basata sul risultato (successo o errore) con accesso al valore
-    /// </summary>
-    /// <typeparam name="TResult">Tipo di ritorno</typeparam>
-    /// <param name="onSuccess">Funzione da eseguire in caso di successo con accesso al valore</param>
-    /// <param name="onError">Funzione da eseguire in caso di errore</param>
-    /// <returns>Risultato della funzione eseguita</returns>
-    public TResult Match<TResult>(Func<T, TResult> onSuccess, Func<Error, TResult> onError)
-    {
-        return IsSuccess ? onSuccess(Value) : onError(Error);
-    }
 
-    /// <summary>
-    /// Esegue un'azione basata sul risultato (successo o errore) con accesso al valore
-    /// </summary>
-    /// <param name="onSuccess">Azione da eseguire in caso di successo con accesso al valore</param>
-    /// <param name="onError">Azione da eseguire in caso di errore</param>
-    public void Match(Action<T> onSuccess, Action<Error> onError)
-    {
-        if (IsSuccess)
-            onSuccess(Value);
-        else
-            onError(Error);
-    }
 }

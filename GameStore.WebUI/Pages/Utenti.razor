@@ -110,26 +110,24 @@
             {
                 PageNumber = 1,
                 PageSize = 20,
-                OrderBy = "DataCreazione desc"
+                OrderBy = "DataRegistrazione desc"
             };
 
             var result = await UtenteService.GetPagedAsync(request);
-            result.Match(
-                onSuccess: (data) =>
-                {
-                    utenti = data.Items;
-                    totalCount = data.TotalItems;
-                    errorMessage = null;
-                    Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
-                },
-                onError: (error) =>
-                {
-                    errorMessage = error.Message;
-                    utenti = new List<UtenteDto>();
-                    totalCount = 0;
-                    Console.WriteLine($"Error loading users: {error.Message}");
-                }
-            );
+            if (result.IsSuccess)
+            {
+                utenti = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                errorMessage = null;
+                Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                utenti = new List<UtenteDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading users: {result.Error.Message}");
+            }
         }
         catch (Exception ex)
         {
@@ -150,30 +148,53 @@
             isLoading = true;
             errorMessage = null;
 
+            // Gestisce l'ordinamento
+            string orderBy = "DataRegistrazione desc"; // default
+            if (!string.IsNullOrEmpty(args.OrderBy))
+            {
+                orderBy = args.OrderBy;
+            }
+
+            // Gestisce i filtri
+            var filterParts = new List<string>();
+            if (args.Filters != null)
+            {
+                foreach (var filter in args.Filters)
+                {
+                    if (filter.FilterValue != null && !string.IsNullOrEmpty(filter.FilterValue.ToString()))
+                    {
+                        var filterValue = filter.FilterValue.ToString();
+                        var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filterValue);
+                        filterParts.Add(filterExpression);
+                    }
+                }
+            }
+
             var request = new FilterRequest
             {
                 PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
                 PageSize = args.Top ?? 20,
-                OrderBy = "DataCreazione desc"
+                OrderBy = orderBy,
+                Filter = filterParts.Any() ? string.Join(" AND ", filterParts) : null
             };
 
+            Console.WriteLine($"Loading data: Page={request.PageNumber}, Size={request.PageSize}, OrderBy={request.OrderBy}, Filter={request.Filter}");
+
             var result = await UtenteService.GetPagedAsync(request);
-            result.Match(
-                onSuccess: (data) =>
-                {
-                    utenti = data.Items;
-                    totalCount = data.TotalItems;
-                    errorMessage = null;
-                    Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
-                },
-                onError: (error) =>
-                {
-                    errorMessage = error.Message;
-                    utenti = new List<UtenteDto>();
-                    totalCount = 0;
-                    Console.WriteLine($"Error loading users: {error.Message}");
-                }
-            );
+            if (result.IsSuccess)
+            {
+                utenti = result.Value.Items;
+                totalCount = result.Value.TotalItems;
+                errorMessage = null;
+                Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                utenti = new List<UtenteDto>();
+                totalCount = 0;
+                Console.WriteLine($"Error loading users: {result.Error.Message}");
+            }
         }
         catch (Exception ex)
         {
@@ -190,6 +211,26 @@
     private void AggiungiUtente()
     {
         Navigation.NavigateTo("/utenti/nuovo");
+    }
+
+    /// <summary>
+    /// Costruisce un'espressione di filtro basata sull'operatore
+    /// </summary>
+    private string BuildFilterExpression(string property, string filterOperator, string filterValue)
+    {
+        return filterOperator?.ToLower() switch
+        {
+            "contains" => $"{property}.Contains(\"{filterValue}\")",
+            "startswith" => $"{property}.StartsWith(\"{filterValue}\")",
+            "endswith" => $"{property}.EndsWith(\"{filterValue}\")",
+            "eq" or "equals" => $"{property} == \"{filterValue}\"",
+            "ne" or "not equals" => $"{property} != \"{filterValue}\"",
+            "gt" or "greater than" => $"{property} > \"{filterValue}\"",
+            "ge" or "greater than or equal" => $"{property} >= \"{filterValue}\"",
+            "lt" or "less than" => $"{property} < \"{filterValue}\"",
+            "le" or "less than or equal" => $"{property} <= \"{filterValue}\"",
+            _ => $"{property} == \"{filterValue}\"" // default
+        };
     }
 
     private void ModificaUtente(Guid id)

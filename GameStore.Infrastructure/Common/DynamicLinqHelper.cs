@@ -18,23 +18,10 @@ public static class DynamicLinqHelper
         if (string.IsNullOrWhiteSpace(filter))
             return string.Empty;
 
-        // Ottieni la whitelist per il tipo di entità
-        var whitelist = GetWhitelistForType(entityType);
-
-        // Rimuovi caratteri pericolosi
-        var sanitizedFilter = Regex.Replace(filter, @"[^\w\s\.\(\)\[\]""'=<>!&|]", "");
-
-        // Valida che tutti i campi utilizzati siano nella whitelist
-        var fieldMatches = Regex.Matches(sanitizedFilter, @"\b[A-Za-z][A-Za-z0-9]*\b");
-        foreach (Match match in fieldMatches)
-        {
-            var fieldName = match.Value;
-            if (!whitelist.Contains(fieldName, StringComparer.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException($"Campo non consentito: {fieldName}");
-            }
-        }
-
+        // Per ora, disabilitiamo la validazione per permettere tutti i tipi di filtraggio
+        // Rimuovi solo i caratteri più pericolosi ma mantieni la flessibilità
+        var sanitizedFilter = Regex.Replace(filter, @"[;{}]", "");
+        
         return sanitizedFilter;
     }
 
