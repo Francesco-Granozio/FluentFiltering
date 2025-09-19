@@ -265,8 +265,18 @@ public class DatabaseSeeder : IDataSeeder
 
     private DateTime GeneraDataRecensione(DateTime dataRegistrazione)
     {
-        var giorniDopoRegistrazione = _random.Next(7, (int)(DateTime.UtcNow - dataRegistrazione).TotalDays);
-        return dataRegistrazione.AddDays(giorniDopoRegistrazione);
+        var giorniTotali = (int)(DateTime.UtcNow - dataRegistrazione).TotalDays;
+        
+        // Se l'utente si è registrato meno di 7 giorni fa, genera la recensione tra 1 e i giorni totali
+        if (giorniTotali < 7)
+        {
+            var giorniDopoRegistrazione = giorniTotali > 1 ? _random.Next(1, giorniTotali + 1) : 1;
+            return dataRegistrazione.AddDays(giorniDopoRegistrazione);
+        }
+        
+        // Se l'utente si è registrato più di 7 giorni fa, genera la recensione tra 7 e i giorni totali
+        var giorniDopoRegistrazioneNormale = _random.Next(7, giorniTotali + 1);
+        return dataRegistrazione.AddDays(giorniDopoRegistrazioneNormale);
     }
 
     private decimal GeneraPrezzo()
