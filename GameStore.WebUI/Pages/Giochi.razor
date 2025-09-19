@@ -160,11 +160,35 @@
             isLoading = true;
             errorMessage = null;
 
+            // Gestisci l'ordinamento
+            var orderBy = "DataCreazione desc";
+            if (!string.IsNullOrEmpty(args.OrderBy))
+            {
+                orderBy = $"{args.OrderBy} {(args.Sorts?.FirstOrDefault()?.SortOrder == SortOrder.Descending ? "desc" : "asc")}";
+            }
+
+            // Gestisci i filtri
+            var filterString = string.Empty;
+            if (args.Filters != null && args.Filters.Any())
+            {
+                var filterParts = new List<string>();
+                foreach (var filter in args.Filters)
+                {
+                    var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filter.FilterValue?.ToString() ?? string.Empty);
+                    if (!string.IsNullOrEmpty(filterExpression))
+                    {
+                        filterParts.Add(filterExpression);
+                    }
+                }
+                filterString = string.Join(" AND ", filterParts);
+            }
+
             var request = new FilterRequest
             {
                 PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
                 PageSize = args.Top ?? 20,
-                OrderBy = "DataCreazione desc"
+                OrderBy = orderBy,
+                Filter = filterString
             };
 
             var result = await GiocoService.GetPagedAsync(request);
@@ -287,5 +311,26 @@
         }
     }
 
+    /// <summary>
+    /// Costruisce un'espressione di filtro basata sull'operatore
+    /// </summary>
+    private string BuildFilterExpression(string property, string filterOperator, string filterValue)
+    {
+        if (string.IsNullOrEmpty(filterValue))
+            return string.Empty;
 
+        return filterOperator switch
+        {
+            "Contains" => $"{property}.Contains(\"{filterValue}\")",
+            "StartsWith" => $"{property}.StartsWith(\"{filterValue}\")",
+            "EndsWith" => $"{property}.EndsWith(\"{filterValue}\")",
+            "Equals" => $"{property} == \"{filterValue}\"",
+            "NotEquals" => $"{property} != \"{filterValue}\"",
+            "GreaterThan" => $"{property} > {filterValue}",
+            "GreaterThanOrEqual" => $"{property} >= {filterValue}",
+            "LessThan" => $"{property} < {filterValue}",
+            "LessThanOrEqual" => $"{property} <= {filterValue}",
+            _ => $"{property}.Contains(\"{filterValue}\")" // Default to Contains
+        };
+    }
 }

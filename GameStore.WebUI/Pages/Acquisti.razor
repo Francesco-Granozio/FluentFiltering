@@ -355,6 +355,9 @@ else
         selectedUtenteId = null;
         selectedGiocoId = null;
         
+        // Force UI update to reset dropdowns
+        StateHasChanged();
+        
         if (grid != null)
         {
             // Reset the grid and clear all filters
@@ -380,18 +383,21 @@ else
     /// </summary>
     private string BuildFilterExpression(string property, string filterOperator, string filterValue)
     {
-        return filterOperator?.ToLower() switch
+        if (string.IsNullOrEmpty(filterValue))
+            return string.Empty;
+
+        return filterOperator switch
         {
-            "contains" => $"{property}.Contains(\"{filterValue}\")",
-            "startswith" => $"{property}.StartsWith(\"{filterValue}\")",
-            "endswith" => $"{property}.EndsWith(\"{filterValue}\")",
-            "eq" or "equals" => $"{property} == \"{filterValue}\"",
-            "ne" or "not equals" => $"{property} != \"{filterValue}\"",
-            "gt" or "greater than" => $"{property} > \"{filterValue}\"",
-            "ge" or "greater than or equal" => $"{property} >= \"{filterValue}\"",
-            "lt" or "less than" => $"{property} < \"{filterValue}\"",
-            "le" or "less than or equal" => $"{property} <= \"{filterValue}\"",
-            _ => $"{property} == \"{filterValue}\"" // default
+            "Contains" => $"{property}.Contains(\"{filterValue}\")",
+            "StartsWith" => $"{property}.StartsWith(\"{filterValue}\")",
+            "EndsWith" => $"{property}.EndsWith(\"{filterValue}\")",
+            "Equals" => $"{property} == \"{filterValue}\"",
+            "NotEquals" => $"{property} != \"{filterValue}\"",
+            "GreaterThan" => $"{property} > {filterValue}",
+            "GreaterThanOrEqual" => $"{property} >= {filterValue}",
+            "LessThan" => $"{property} < {filterValue}",
+            "LessThanOrEqual" => $"{property} <= {filterValue}",
+            _ => $"{property}.Contains(\"{filterValue}\")" // Default to Contains
         };
     }
 
