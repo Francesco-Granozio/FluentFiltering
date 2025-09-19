@@ -5,6 +5,7 @@ using GameStore.Domain.DTOs.Common;
 using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Application.Services;
 
@@ -37,7 +38,14 @@ public class RecensioneService : IRecensioneService
 
     public async Task<Result<PagedResult<RecensioneDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
     {
-        var pagedResult = await _unitOfWork.Recensioni.GetPagedAsync(request, cancellationToken: cancellationToken);
+        // Converte i nomi delle proprietà del DTO in nomi delle proprietà dell'entità
+        var modifiedRequest = ConvertDtoFilterToEntityFilter(request);
+        
+        var pagedResult = await _unitOfWork.Recensioni.GetPagedAsync(modifiedRequest, 
+            presetFilter: r => !r.IsCancellato,
+            includes: q => q.Include(r => r.Utente).Include(r => r.Gioco),
+            cancellationToken: cancellationToken);
+        
         var dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(pagedResult.Items);
 
         return new PagedResult<RecensioneDto>
@@ -47,6 +55,28 @@ public class RecensioneService : IRecensioneService
             PageNumber = pagedResult.PageNumber,
             PageSize = pagedResult.PageSize,
             TotalPages = pagedResult.TotalPages
+        };
+    }
+
+    /// <summary>
+    /// Converte i filtri del DTO in filtri dell'entità
+    /// </summary>
+    private FilterRequest ConvertDtoFilterToEntityFilter(FilterRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Filter))
+            return request;
+
+        // Sostituisce i nomi delle proprietà del DTO con i nomi delle proprietà dell'entità
+        var entityFilter = request.Filter
+            .Replace("UtenteUsername", "Utente.Username")
+            .Replace("GiocoTitolo", "Gioco.Titolo");
+
+        return new FilterRequest
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            OrderBy = request.OrderBy,
+            Filter = entityFilter
         };
     }
 

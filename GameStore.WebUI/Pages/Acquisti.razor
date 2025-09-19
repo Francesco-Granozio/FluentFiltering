@@ -40,7 +40,7 @@ else
     <div class="row mb-3">
     <div class="col-md-4">
         <label for="utenteFilter" class="form-label">Filtra per Utente</label>
-        <select id="utenteFilter" @onchange="OnUtenteFilterChanged" class="form-select">
+        <select id="utenteFilter" @bind="selectedUtenteId" @bind:after="OnUtenteFilterChanged" class="form-select">
             <option value="">Tutti gli utenti</option>
             @foreach (var utente in utenti)
             {
@@ -50,7 +50,7 @@ else
     </div>
     <div class="col-md-4">
         <label for="giocoFilter" class="form-label">Filtra per Gioco</label>
-        <select id="giocoFilter" @onchange="OnGiocoFilterChanged" class="form-select">
+        <select id="giocoFilter" @bind="selectedGiocoId" @bind:after="OnGiocoFilterChanged" class="form-select">
             <option value="">Tutti i giochi</option>
             @foreach (var gioco in giochi)
             {
@@ -315,34 +315,18 @@ else
         Navigation.NavigateTo("/acquisti/nuovo");
     }
 
-    private async Task OnUtenteFilterChanged(ChangeEventArgs e)
+    private async Task OnUtenteFilterChanged()
     {
-        if (string.IsNullOrEmpty(e.Value?.ToString()))
-        {
-            selectedUtenteId = null;
-        }
-        else if (Guid.TryParse(e.Value.ToString(), out var utenteId))
-        {
-            selectedUtenteId = utenteId;
-        }
-        
+        // Il valore è già aggiornato tramite @bind
         if (grid != null)
         {
             await grid.Reload();
         }
     }
 
-    private async Task OnGiocoFilterChanged(ChangeEventArgs e)
+    private async Task OnGiocoFilterChanged()
     {
-        if (string.IsNullOrEmpty(e.Value?.ToString()))
-        {
-            selectedGiocoId = null;
-        }
-        else if (Guid.TryParse(e.Value.ToString(), out var giocoId))
-        {
-            selectedGiocoId = giocoId;
-        }
-        
+        // Il valore è già aggiornato tramite @bind
         if (grid != null)
         {
             await grid.Reload();
@@ -354,9 +338,6 @@ else
         // Reset dropdown filters
         selectedUtenteId = null;
         selectedGiocoId = null;
-        
-        // Force UI update to reset dropdowns
-        StateHasChanged();
         
         if (grid != null)
         {
@@ -374,8 +355,10 @@ else
             
             // Reload the grid
             await grid.Reload();
-            StateHasChanged();
         }
+        
+        // Force UI update to reset dropdowns and grid
+        StateHasChanged();
     }
 
     /// <summary>

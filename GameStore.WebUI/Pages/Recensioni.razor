@@ -4,6 +4,7 @@
 @using GameStore.Domain.DTOs.Common
 @using GameStore.Application.Common
 @inject IRecensioneService RecensioneService
+@inject IGiocoService GiocoService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
 @inject NotificationService NotificationService
@@ -24,6 +25,25 @@
 {
     <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
 }
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label for="giocoFilter" class="form-label">Filtra per Gioco</label>
+        <select id="giocoFilter" @bind="selectedGiocoId" @bind:after="OnGiocoFilterChanged" class="form-select">
+            <option value="">Tutti i giochi</option>
+            @foreach (var gioco in giochi)
+            {
+                <option value="@gioco.Id">@gioco.Titolo</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">&nbsp;</label>
+        <div>
+            <!-- Spazio per eventuali altri filtri -->
+        </div>
+    </div>
+</div>
 
 <RadzenDataGrid @ref="grid" 
                 Data="@recensioni" 
@@ -105,13 +125,54 @@
 @code {
     private RadzenDataGrid<RecensioneDto>? grid;
     private List<RecensioneDto> recensioni = new List<RecensioneDto>();
+    private List<GiocoDto> giochi = new();
+    private Guid? selectedGiocoId = null;
     private bool isLoading = false;
+    private bool isLoadingData = true;
     private string? errorMessage;
     private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadInitialData();
+        await CaricaDati();
+    }
+
+    private async Task CaricaDati()
+    {
+        try
+        {
+            isLoadingData = true;
+            errorMessage = null;
+
+            // Carica tutti i giochi per il dropdown
+            var giochiRequest = new FilterRequest
+            {
+                PageNumber = 1,
+                PageSize = 1000, // Carica molti giochi per il dropdown
+                OrderBy = "Titolo asc"
+            };
+            
+            var giochiResult = await GiocoService.GetPagedAsync(giochiRequest);
+            if (giochiResult.IsSuccess)
+            {
+                giochi = giochiResult.Value.Items.ToList();
+            }
+            else
+            {
+                errorMessage = $"Errore nel caricamento dei giochi: {giochiResult.Error.Message}";
+            }
+
+            // Carica le recensioni iniziali
+            await LoadInitialData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingData = false;
+        }
     }
 
     private async Task LoadInitialData()
@@ -175,11 +236,43 @@
             isLoading = true;
             errorMessage = null;
 
+            // Gestisci l'ordinamento
+            var orderBy = "DataCreazione desc";
+            if (!string.IsNullOrEmpty(args.OrderBy))
+            {
+                orderBy = $"{args.OrderBy} {(args.Sorts?.FirstOrDefault()?.SortOrder == SortOrder.Descending ? "desc" : "asc")}";
+            }
+
+            // Gestisci i filtri della griglia
+            var filterString = string.Empty;
+            if (args.Filters != null && args.Filters.Any())
+            {
+                var filterParts = new List<string>();
+                foreach (var filter in args.Filters)
+                {
+                    var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filter.FilterValue?.ToString() ?? string.Empty);
+                    if (!string.IsNullOrEmpty(filterExpression))
+                    {
+                        filterParts.Add(filterExpression);
+                    }
+                }
+                filterString = string.Join(" AND ", filterParts);
+            }
+
+            // Aggiungi filtro per gioco se selezionato
+            if (selectedGiocoId.HasValue)
+            {
+                if (!string.IsNullOrEmpty(filterString))
+                    filterString += " AND ";
+                filterString += $"GiocoId == \"{selectedGiocoId.Value}\"";
+            }
+
             var request = new FilterRequest
             {
                 PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
                 PageSize = args.Top ?? 20,
-                OrderBy = "DataCreazione desc"
+                OrderBy = orderBy,
+                Filter = filterString
             };
 
             var result = await RecensioneService.GetPagedAsync(request);
@@ -207,6 +300,15 @@
         }
     }
 
+    private async Task OnGiocoFilterChanged()
+    {
+        // Il valore è già aggiornato tramite @bind
+        if (grid != null)
+        {
+            await grid.Reload();
+        }
+    }
+
     private void AggiungiRecensione()
     {
         Navigation.NavigateTo("/recensioni/nuovo");
@@ -214,6 +316,9 @@
 
     private async Task ClearFilters()
     {
+        // Reset dropdown filter
+        selectedGiocoId = null;
+        
         if (grid != null)
         {
             // Reset the grid and clear all filters
@@ -230,8 +335,10 @@
             
             // Reload the grid
             await grid.Reload();
-            StateHasChanged();
         }
+        
+        // Force UI update to reset dropdown and grid
+        StateHasChanged();
     }
 
     private void ModificaRecensione(Guid id)
@@ -302,4 +409,26 @@
         }
     }
 
+    /// <summary>
+    /// Costruisce un'espressione di filtro basata sull'operatore
+    /// </summary>
+    private string BuildFilterExpression(string property, string filterOperator, string filterValue)
+    {
+        if (string.IsNullOrEmpty(filterValue))
+            return string.Empty;
+
+        return filterOperator switch
+        {
+            "Contains" => $"{property}.Contains(\"{filterValue}\")",
+            "StartsWith" => $"{property}.StartsWith(\"{filterValue}\")",
+            "EndsWith" => $"{property}.EndsWith(\"{filterValue}\")",
+            "Equals" => $"{property} == \"{filterValue}\"",
+            "NotEquals" => $"{property} != \"{filterValue}\"",
+            "GreaterThan" => $"{property} > {filterValue}",
+            "GreaterThanOrEqual" => $"{property} >= {filterValue}",
+            "LessThan" => $"{property} < {filterValue}",
+            "LessThanOrEqual" => $"{property} <= {filterValue}",
+            _ => $"{property}.Contains(\"{filterValue}\")" // Default to Contains
+        };
+    }
 }
