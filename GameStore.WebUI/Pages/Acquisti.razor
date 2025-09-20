@@ -10,7 +10,7 @@
 @inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<PageTitle>Gestione Acquisti</PageTitle>
+<PageTitle>Gestione Acquisti - GameStore AI</PageTitle>
 
 <div class="row mb-3">
     <div class="col">
@@ -37,14 +37,6 @@ else
         <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
     }
 
-    <div class="row mb-3">
-
-        <div class="col-md-4">
-            <label class="form-label">&nbsp;</label>
-            <div>
-            </div>
-        </div>
-    </div>
 
     <RadzenDataGrid @ref="grid"
                     Data="@acquisti"

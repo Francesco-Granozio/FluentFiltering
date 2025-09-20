@@ -1,0 +1,104 @@
+.dashboard-header h1 {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.stat-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.stat-card .card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.stat-card h3 {
+    font-size: 2.25rem;
+    font-weight: 700;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card-header h5 {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.text-primary {
+    color: #3b82f6 !important;
+}
+
+.text-success {
+    color: #10b981 !important;
+}
+
+.text-info {
+    color: #06b6d4 !important;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+}
+
+.bg-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.bg-info {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+}
+
+.lead {
+    color: #64748b;
+    font-size: 1.125rem;
+}
+
+.list-unstyled li {
+    margin-bottom: 0.5rem;
+}
+
+.list-unstyled li .oi {
+    margin-right: 0.5rem;
+}
