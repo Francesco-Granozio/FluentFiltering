@@ -299,6 +299,44 @@ h3 {
     margin-right: 0.5rem !important;
 }
 
+/* Dynamic grid heights - managed by JavaScript */
+.dynamic-grid-container {
+    height: 600px; /* Default fallback height */
+    min-height: 250px;
+    max-height: 900px;
+    display: flex;
+    flex-direction: column;
+    transition: height 0.3s ease;
+}
+
+.dynamic-grid-container .apple-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dynamic-grid-container .apple-card .rz-datagrid {
+    flex: 1;
+    overflow: auto;
+}
+
+/* Ensure Radzen DataGrid adapts to container */
+.dynamic-grid-container .rz-datagrid .rz-datagrid-content {
+    overflow-y: auto;
+}
+
+.dynamic-grid-container .rz-datagrid .rz-datagrid-tbody {
+    overflow: visible;
+}
+
+/* Smooth transitions for responsive changes */
+@media (prefers-reduced-motion: no-preference) {
+    .dynamic-grid-container {
+        transition: height 0.3s ease;
+    }
+}
+
 /* Compact header cards */
 .apple-card.compact-header {
     padding: 16px 24px;

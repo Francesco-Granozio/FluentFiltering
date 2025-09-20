@@ -30,22 +30,23 @@
     </div>
 }
 
-<div class="apple-card">
-    <RadzenDataGrid @ref="grid" 
-                Data="@giochi" 
-                TItem="GiocoDto"
-                AllowPaging="true" 
-                AllowSorting="true"
-                AllowFiltering="true"
-                AllowFilteringByColumn="true"
-                FilterMode="FilterMode.SimpleWithMenu"
-                PageSize="20"
-                Count="@totalCount"
-                PagerHorizontalAlign="HorizontalAlign.Left"
-                ShowPagingSummary="true"
-                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
-                Loading="@isLoading"
-                LoadData="@LoadData">
+<DynamicGridComponent @ref="dynamicGrid">
+    <div class="apple-card">
+        <RadzenDataGrid @ref="grid" 
+                    Data="@giochi" 
+                    TItem="GiocoDto"
+                    AllowPaging="true" 
+                    AllowSorting="true"
+                    AllowFiltering="true"
+                    AllowFilteringByColumn="true"
+                    FilterMode="FilterMode.SimpleWithMenu"
+                    PageSize="20"
+                    Count="@totalCount"
+                    PagerHorizontalAlign="HorizontalAlign.Left"
+                    ShowPagingSummary="true"
+                    PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                    Loading="@isLoading"
+                    LoadData="@LoadData">
     
     <Columns>
         <RadzenDataGridColumn TItem="GiocoDto" Property="Titolo" Title="Titolo" Width="200px" Filterable="true">
@@ -105,10 +106,12 @@
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
-</div>
+    </div>
+</DynamicGridComponent>
 
 @code {
     private RadzenDataGrid<GiocoDto>? grid;
+    private DynamicGridComponent? dynamicGrid;
     private List<GiocoDto> giochi = new List<GiocoDto>();
     private bool isLoading = false;
     private string? errorMessage;

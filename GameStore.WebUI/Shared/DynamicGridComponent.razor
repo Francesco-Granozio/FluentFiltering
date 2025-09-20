@@ -1,0 +1,25 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div class="dynamic-grid-container" @ref="gridContainer">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    
+    private ElementReference gridContainer;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("registerDynamicGrid", gridContainer);
+        }
+    }
+
+    public async Task RefreshGrid()
+    {
+        await JSRuntime.InvokeVoidAsync("refreshDynamicGrid", gridContainer);
+    }
+}
