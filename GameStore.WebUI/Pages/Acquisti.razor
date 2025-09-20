@@ -18,7 +18,7 @@
     </div>
     <div class="col-auto">
         <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="me-2" />
-        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuovo Acquisto" Click="AggiungiAcquisto" />
+        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuovo acquisto" Click="AggiungiAcquisto" />
     </div>
 </div>
 
@@ -38,115 +38,93 @@ else
     }
 
     <div class="row mb-3">
-    <div class="col-md-4">
-        <label for="utenteFilter" class="form-label">Filtra per Utente</label>
-        <select id="utenteFilter" @bind="selectedUtenteId" @bind:after="OnUtenteFilterChanged" class="form-select">
-            <option value="">Tutti gli utenti</option>
-            @foreach (var utente in utenti)
-            {
-                <option value="@utente.Id">@utente.Username - @utente.NomeCompleto</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label for="giocoFilter" class="form-label">Filtra per Gioco</label>
-        <select id="giocoFilter" @bind="selectedGiocoId" @bind:after="OnGiocoFilterChanged" class="form-select">
-            <option value="">Tutti i giochi</option>
-            @foreach (var gioco in giochi)
-            {
-                <option value="@gioco.Id">@gioco.Titolo</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">&nbsp;</label>
-        <div>
-            <!-- Pulsante spostato nella barra superiore -->
+
+        <div class="col-md-4">
+            <label class="form-label">&nbsp;</label>
+            <div>
+            </div>
         </div>
     </div>
-</div>
 
-<RadzenDataGrid @ref="grid" 
-                Data="@acquisti" 
-                TItem="AcquistoDto"
-                AllowPaging="true" 
-                AllowSorting="true"
-                AllowFiltering="true"
-                AllowFilteringByColumn="true"
-                FilterMode="FilterMode.SimpleWithMenu"
-                PageSize="20"
-                Count="@totalCount"
-                PagerHorizontalAlign="HorizontalAlign.Left"
-                ShowPagingSummary="true"
-                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
-                Loading="@isLoading"
-                LoadData="@LoadData">
-    
-    <Columns>
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="UtenteUsername" Title="Utente" Width="150px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.UtenteUsername" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="GiocoTitolo" Title="Gioco" Width="200px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.GiocoTitolo" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.DataAcquisto.ToString("dd/MM/yyyy")" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.PrezzoPagato.ToString("C")" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="Quantita" Title="Quantità" Width="100px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.Quantita.ToString()" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="150px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.MetodoPagamento" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px" Filterable="true">
-            <Template Context="acquisto">
-                <RadzenLabel Text="@acquisto.CodiceSconto" />
-            </Template>
-        </RadzenDataGridColumn>
-        
-        <RadzenDataGridColumn TItem="AcquistoDto" Filterable="false" Sortable="false" Width="120px">
-            <Template Context="acquisto">
-                <RadzenButton ButtonStyle="ButtonStyle.Light" 
-                             Icon="edit" 
-                             Size="ButtonSize.Small" 
-                             Click="@(() => ModificaAcquisto(acquisto.Id))" 
-                             class="me-1" />
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
-                             Icon="delete" 
-                             Size="ButtonSize.Small" 
-                             Click="@(() => CancellaAcquisto(acquisto.Id))" />
-            </Template>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+    <RadzenDataGrid @ref="grid"
+                    Data="@acquisti"
+                    TItem="AcquistoDto"
+                    AllowPaging="true"
+                    AllowSorting="true"
+                    AllowFiltering="true"
+                    AllowFilteringByColumn="true"
+                    FilterMode="FilterMode.SimpleWithMenu"
+                    PageSize="20"
+                    Count="@totalCount"
+                    PagerHorizontalAlign="HorizontalAlign.Left"
+                    ShowPagingSummary="true"
+                    PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                    Loading="@isLoading"
+                    LoadData="@LoadData">
+
+        <Columns>
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="UtenteUsername" Title="Utente" Width="150px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.UtenteUsername" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="GiocoTitolo" Title="Gioco" Width="200px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.GiocoTitolo" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.DataAcquisto.ToString("dd/MM/yyyy")" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.PrezzoPagato.ToString("C")" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="Quantita" Title="Quantità" Width="100px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.Quantita.ToString()" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="150px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.MetodoPagamento" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px" Filterable="true">
+                <Template Context="acquisto">
+                    <RadzenLabel Text="@acquisto.CodiceSconto" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="AcquistoDto" Filterable="false" Sortable="false" Width="120px">
+                <Template Context="acquisto">
+                    <RadzenButton ButtonStyle="ButtonStyle.Light"
+                                  Icon="edit"
+                                  Size="ButtonSize.Small"
+                                  Click="@(() => ModificaAcquisto(acquisto.Id))"
+                                  class="me-1" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                  Icon="delete"
+                                  Size="ButtonSize.Small"
+                                  Click="@(() => CancellaAcquisto(acquisto.Id))" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 @code {
     private RadzenDataGrid<AcquistoDto>? grid;
     private List<AcquistoDto> acquisti = new List<AcquistoDto>();
-    private List<UtenteDto> utenti = new();
-    private List<GiocoDto> giochi = new();
     private bool isLoading = false;
     private bool isLoadingData = true;
     private string? errorMessage;
@@ -165,22 +143,6 @@ else
         {
             isLoadingData = true;
             errorMessage = null;
-
-            // Carica utenti
-            var utentiRequest = new FilterRequest { PageSize = 1000 };
-            var utentiResult = await UtenteService.GetPagedAsync(utentiRequest);
-            if (utentiResult.IsSuccess)
-            {
-                utenti = utentiResult.Value.Items.ToList();
-            }
-
-            // Carica giochi
-            var giochiRequest = new FilterRequest { PageSize = 1000 };
-            var giochiResult = await GiocoService.GetPagedAsync(giochiRequest);
-            if (giochiResult.IsSuccess)
-            {
-                giochi = giochiResult.Value.Items.ToList();
-            }
 
             // Carica acquisti iniziali
             await LoadInitialData();
@@ -338,25 +300,25 @@ else
         // Reset dropdown filters
         selectedUtenteId = null;
         selectedGiocoId = null;
-        
+
         if (grid != null)
         {
             // Reset the grid and clear all filters
             grid.Reset(false, false);
-            
+
             // Clear filters on each column
             grid.ColumnsCollection.ToList().ForEach(column =>
             {
                 column.ClearFilters();
             });
-            
+
             // Clear the data source to force reload
             acquisti.Clear();
-            
+
             // Reload the grid
             await grid.Reload();
         }
-        
+
         // Force UI update to reset dropdowns and grid
         StateHasChanged();
     }
@@ -397,9 +359,9 @@ else
             var result = await DialogService.Confirm(
                 "Sei sicuro di voler cancellare questo acquisto? Questa azione non può essere annullata.",
                 "Conferma Cancellazione",
-                new ConfirmOptions() 
-                { 
-                    OkButtonText = "Sì, cancella", 
+                new ConfirmOptions()
+                {
+                    OkButtonText = "Sì, cancella",
                     CancelButtonText = "Annulla",
                     Style = "min-width: 400px"
                 }
@@ -412,24 +374,24 @@ else
                 if (deleteResult.IsSuccess)
                 {
                     // Mostra notifica di successo
-                    NotificationService.Notify(new NotificationMessage 
-                    { 
-                        Severity = NotificationSeverity.Success, 
+                    NotificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Success,
                         Summary = "Acquisto Cancellato",
                         Detail = "L'acquisto è stato cancellato con successo.",
                         Duration = 4000,
                         ShowProgress = true
                     });
-                    
+
                     // Ricarica la griglia
                     await LoadInitialData();
                 }
                 else
                 {
                     // Mostra notifica di errore
-                    NotificationService.Notify(new NotificationMessage 
-                    { 
-                        Severity = NotificationSeverity.Error, 
+                    NotificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
                         Summary = "Errore",
                         Detail = deleteResult.Error.Message,
                         Duration = 6000,
@@ -441,9 +403,9 @@ else
         catch (Exception ex)
         {
             // Mostra notifica di errore
-            NotificationService.Notify(new NotificationMessage 
-            { 
-                Severity = NotificationSeverity.Error, 
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
                 Summary = "Errore",
                 Detail = $"Errore durante la cancellazione: {ex.Message}",
                 Duration = 6000,

@@ -4,7 +4,6 @@
 @using GameStore.Domain.DTOs.Common
 @using GameStore.Application.Common
 @inject IRecensioneService RecensioneService
-@inject IGiocoService GiocoService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
 @inject NotificationService NotificationService
@@ -26,24 +25,6 @@
     <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
 }
 
-<div class="row mb-3">
-    <div class="col-md-4">
-        <label for="giocoFilter" class="form-label">Filtra per Gioco</label>
-        <select id="giocoFilter" @bind="selectedGiocoId" @bind:after="OnGiocoFilterChanged" class="form-select">
-            <option value="">Tutti i giochi</option>
-            @foreach (var gioco in giochi)
-            {
-                <option value="@gioco.Id">@gioco.Titolo</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-8">
-        <label class="form-label">&nbsp;</label>
-        <div>
-            <!-- Spazio per eventuali altri filtri -->
-        </div>
-    </div>
-</div>
 
 <RadzenDataGrid @ref="grid" 
                 Data="@recensioni" 
@@ -125,8 +106,6 @@
 @code {
     private RadzenDataGrid<RecensioneDto>? grid;
     private List<RecensioneDto> recensioni = new List<RecensioneDto>();
-    private List<GiocoDto> giochi = new();
-    private Guid? selectedGiocoId = null;
     private bool isLoading = false;
     private bool isLoadingData = true;
     private string? errorMessage;
@@ -144,24 +123,7 @@
             isLoadingData = true;
             errorMessage = null;
 
-            // Carica tutti i giochi per il dropdown
-            var giochiRequest = new FilterRequest
-            {
-                PageNumber = 1,
-                PageSize = 1000, // Carica molti giochi per il dropdown
-                OrderBy = "Titolo asc"
-            };
-            
-            var giochiResult = await GiocoService.GetPagedAsync(giochiRequest);
-            if (giochiResult.IsSuccess)
-            {
-                giochi = giochiResult.Value.Items.ToList();
-            }
-            else
-            {
-                errorMessage = $"Errore nel caricamento dei giochi: {giochiResult.Error.Message}";
-            }
-
+          
             // Carica le recensioni iniziali
             await LoadInitialData();
         }
@@ -259,13 +221,6 @@
                 filterString = string.Join(" AND ", filterParts);
             }
 
-            // Aggiungi filtro per gioco se selezionato
-            if (selectedGiocoId.HasValue)
-            {
-                if (!string.IsNullOrEmpty(filterString))
-                    filterString += " AND ";
-                filterString += $"GiocoId == \"{selectedGiocoId.Value}\"";
-            }
 
             var request = new FilterRequest
             {
@@ -300,14 +255,6 @@
         }
     }
 
-    private async Task OnGiocoFilterChanged()
-    {
-        // Il valore è già aggiornato tramite @bind
-        if (grid != null)
-        {
-            await grid.Reload();
-        }
-    }
 
     private void AggiungiRecensione()
     {
@@ -316,8 +263,7 @@
 
     private async Task ClearFilters()
     {
-        // Reset dropdown filter
-        selectedGiocoId = null;
+        // Reset filters
         
         if (grid != null)
         {
@@ -337,7 +283,7 @@
             await grid.Reload();
         }
         
-        // Force UI update to reset dropdown and grid
+        // Force UI update to reset grid
         StateHasChanged();
     }
 
