@@ -21,16 +21,19 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     public virtual async Task<T?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        IQueryable<T> query = _dbSet.AsQueryable();
-
-        if (!includeDeleted)
+        return await ExecuteSafelyAsync(async () =>
         {
-            // Il filtro globale per soft delete è già applicato dal DbContext
-            // Se includeDeleted è true, lo bypassiamo temporaneamente
-            query = query.IgnoreQueryFilters();
-        }
+            IQueryable<T> query = _dbSet.AsQueryable();
 
-        return await query.FirstOrDefaultAsync(BuildIdExpression(id), cancellationToken);
+            if (!includeDeleted)
+            {
+                // Il filtro globale per soft delete è già applicato dal DbContext
+                // Se includeDeleted è true, lo bypassiamo temporaneamente
+                query = query.IgnoreQueryFilters();
+            }
+
+            return await query.FirstOrDefaultAsync(BuildIdExpression(id), cancellationToken);
+        }, cancellationToken);
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
@@ -198,7 +201,39 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         return Expression.Lambda<Func<T, bool>>(equality, parameter);
     }
 
+    /// <summary>
+    /// Esegue un'operazione in modo thread-safe
+    /// </summary>
+    protected async Task<TResult> ExecuteSafelyAsync<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await operation();
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("A second operation was started"))
+        {
+            // Retry con un piccolo delay per evitare conflitti concorrenti
+            await Task.Delay(100, cancellationToken);
+            return await operation();
+        }
+    }
 
+    /// <summary>
+    /// Esegue un'operazione in modo thread-safe (senza valore di ritorno)
+    /// </summary>
+    protected async Task ExecuteSafelyAsync(Func<Task> operation, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await operation();
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("A second operation was started"))
+        {
+            // Retry con un piccolo delay per evitare conflitti concorrenti
+            await Task.Delay(100, cancellationToken);
+            await operation();
+        }
+    }
 
     #endregion
 }

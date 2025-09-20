@@ -43,48 +43,46 @@
     }
 
     <!-- Data Grid -->
-    <div class="dynamic-grid-container mt-4">
-        <div class="apple-card">
-            <DynamicGridComponent>
-                <RadzenDataGrid @ref="grid" 
-                                Data="@giochiAcquistati" 
-                                TItem="GiochiAcquistatiDto"
-                                AllowPaging="true" 
-                                AllowSorting="true"
-                                AllowFiltering="true"
-                                AllowFilteringByColumn="true"
-                                FilterMode="FilterMode.Advanced"
-                                PageSize="20"
-                                PagerHorizontalAlign="HorizontalAlign.Left"
-                                ShowPagingSummary="true"
-                                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
-                                Loading="@isLoading">
+    <div class="mt-4">
+        <DynamicGridComponent @ref="dynamicGrid">
+            <RadzenDataGrid @ref="grid" 
+                            Data="@giochiAcquistati" 
+                            TItem="GiochiAcquistatiDto"
+                            AllowPaging="true" 
+                            AllowSorting="true"
+                            AllowFiltering="true"
+                            AllowFilteringByColumn="true"
+                            FilterMode="FilterMode.Advanced"
+                            PageSize="20"
+                            PagerHorizontalAlign="HorizontalAlign.Left"
+                            ShowPagingSummary="true"
+                            PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                            Loading="@isLoading">
 
-                    <Columns>
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteUsername" Title="Username" Width="120px" />
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteNomeCompleto" Title="Nome Completo" Width="150px" />
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="200px" />
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Gioco" Width="200px" />
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="300px" />
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPrezzo" Title="Prezzo" Width="100px">
-                            <Template>
-                                @context.GiocoPrezzo.ToString("C2")
-                            </Template>
-                        </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="150px">
-                            <Template>
-                                @context.DataAcquisto.ToString("dd/MM/yyyy HH:mm")
-                            </Template>
-                        </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataCreazione" Title="Data Creazione" Width="150px">
-                            <Template>
-                                @context.DataCreazione.ToString("dd/MM/yyyy HH:mm")
-                            </Template>
-                        </RadzenDataGridColumn>
-                    </Columns>
-                </RadzenDataGrid>
-            </DynamicGridComponent>
-        </div>
+                <Columns>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteUsername" Title="Username" Width="120px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteNomeCompleto" Title="Nome Completo" Width="150px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="200px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Gioco" Width="200px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="300px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPrezzo" Title="Prezzo" Width="100px">
+                        <Template>
+                            @context.GiocoPrezzo.ToString("C2")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="150px">
+                        <Template>
+                            @context.DataAcquisto.ToString("dd/MM/yyyy HH:mm")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataCreazione" Title="Data Creazione" Width="150px">
+                        <Template>
+                            @context.DataCreazione.ToString("dd/MM/yyyy HH:mm")
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </DynamicGridComponent>
     </div>
 </div>
 
@@ -93,6 +91,7 @@
     private bool isLoading = false;
     private string? errorMessage;
     private RadzenDataGrid<GiochiAcquistatiDto>? grid;
+    private DynamicGridComponent? dynamicGrid;
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,6 +140,12 @@
         finally
         {
             isLoading = false;
+            
+            // Refresh the dynamic grid after loading data
+            if (dynamicGrid != null)
+            {
+                await dynamicGrid.RefreshGrid();
+            }
         }
     }
 
@@ -152,5 +157,11 @@
             await LoadInitialData();
         }
         StateHasChanged();
+        
+        // Refresh the dynamic grid after clearing filters
+        if (dynamicGrid != null)
+        {
+            await dynamicGrid.RefreshGrid();
+        }
     }
 }

@@ -113,11 +113,18 @@
     private List<GiocoDto> giochi = new List<GiocoDto>();
     private bool isLoading = false;
     private string? errorMessage;
-    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadInitialData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && dynamicGrid != null)
+        {
+            await dynamicGrid.EnsurePaginationVisible();
+        }
     }
 
     private async Task LoadInitialData()
@@ -130,7 +137,7 @@
             var request = new FilterRequest
             {
                 PageNumber = 1,
-                PageSize = 20,
+                PageSize = 10000, // Carica un numero molto alto per ottenere tutti i record
                 OrderBy = "DataCreazione desc"
             };
 
@@ -138,14 +145,13 @@
             if (result.IsSuccess)
             {
                 giochi = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-                Console.WriteLine($"Loaded {giochi.Count()} games, total: {totalCount}");
+                errorMessage = null;
+                Console.WriteLine($"Loaded {giochi.Count()} games for client-side filtering");
             }
             else
             {
                 errorMessage = result.Error.Message;
                 giochi = new List<GiocoDto>();
-                totalCount = 0;
                 Console.WriteLine($"Error loading games: {result.Error.Message}");
             }
         }
@@ -153,7 +159,6 @@
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
             giochi = new List<GiocoDto>();
-            totalCount = 0;
         }
         finally
         {
@@ -161,68 +166,6 @@
         }
     }
 
-    private async Task LoadData(LoadDataArgs args)
-    {
-        try
-        {
-            isLoading = true;
-            errorMessage = null;
-
-            // Gestisci l'ordinamento
-            var orderBy = "DataCreazione desc";
-            if (!string.IsNullOrEmpty(args.OrderBy))
-            {
-                orderBy = $"{args.OrderBy} {(args.Sorts?.FirstOrDefault()?.SortOrder == SortOrder.Descending ? "desc" : "asc")}";
-            }
-
-            // Gestisci i filtri
-            var filterString = string.Empty;
-            if (args.Filters != null && args.Filters.Any())
-            {
-                var filterParts = new List<string>();
-                foreach (var filter in args.Filters)
-                {
-                    var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filter.FilterValue?.ToString() ?? string.Empty);
-                    if (!string.IsNullOrEmpty(filterExpression))
-                    {
-                        filterParts.Add(filterExpression);
-                    }
-                }
-                filterString = string.Join(" AND ", filterParts);
-            }
-
-            var request = new FilterRequest
-            {
-                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
-                PageSize = args.Top ?? 20,
-                OrderBy = orderBy,
-                Filter = filterString
-            };
-
-            var result = await GiocoService.GetPagedAsync(request);
-            if (result.IsSuccess)
-            {
-                giochi = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-            }
-            else
-            {
-                errorMessage = result.Error.Message;
-                giochi = new List<GiocoDto>();
-                totalCount = 0;
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Errore durante il caricamento: {ex.Message}";
-            giochi = new List<GiocoDto>();
-            totalCount = 0;
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
 
     private void AggiungiGioco()
     {
@@ -242,12 +185,8 @@
                 column.ClearFilters();
             });
             
-            // Clear the data source to force reload
-            giochi.Clear();
-            
-            // Reload the grid
-            await grid.Reload();
-            StateHasChanged();
+            // Reload all data
+            await LoadInitialData();
         }
     }
 

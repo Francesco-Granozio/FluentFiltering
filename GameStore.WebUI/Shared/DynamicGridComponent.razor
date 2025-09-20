@@ -1,5 +1,6 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div class="dynamic-grid-container" @ref="gridContainer">
     @ChildContent
@@ -18,8 +19,32 @@
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("unregisterDynamicGrid", gridContainer);
+        }
+        catch
+        {
+            // Ignore errors during disposal
+        }
+    }
+
     public async Task RefreshGrid()
     {
         await JSRuntime.InvokeVoidAsync("refreshDynamicGrid", gridContainer);
+    }
+
+    public async Task EnsurePaginationVisible()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("ensurePaginationVisible", gridContainer);
+        }
+        catch
+        {
+            // Ignore errors if JS function doesn't exist yet
+        }
     }
 }

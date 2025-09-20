@@ -25,7 +25,7 @@
     </div>
 </div>
 
-@if (isLoadingData)
+@if (isLoading)
 {
     <div class="text-center">
         <div class="spinner-border" role="status">
@@ -125,9 +125,7 @@ else
     private DynamicGridComponent? dynamicGrid;
     private List<AcquistoDto> acquisti = new List<AcquistoDto>();
     private bool isLoading = false;
-    private bool isLoadingData = true;
     private string? errorMessage;
-    private int totalCount = 0;
     private Guid? selectedUtenteId;
     private Guid? selectedGiocoId;
 
@@ -136,11 +134,19 @@ else
         await CaricaDati();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && dynamicGrid != null)
+        {
+            await dynamicGrid.EnsurePaginationVisible();
+        }
+    }
+
     private async Task CaricaDati()
     {
         try
         {
-            isLoadingData = true;
+            isLoading = true;
             errorMessage = null;
 
             // Carica acquisti iniziali
@@ -152,7 +158,7 @@ else
         }
         finally
         {
-            isLoadingData = false;
+            isLoading = false;
         }
     }
 
@@ -166,7 +172,7 @@ else
             var request = new FilterRequest
             {
                 PageNumber = 1,
-                PageSize = 20,
+                PageSize = 10000, // Carica un numero molto alto per ottenere tutti i record
                 OrderBy = "DataAcquisto desc"
             };
 
@@ -174,14 +180,12 @@ else
             if (result.IsSuccess)
             {
                 acquisti = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-                Console.WriteLine($"Loaded {acquisti.Count()} purchases, total: {totalCount}");
+                Console.WriteLine($"Loaded {acquisti.Count()} purchases for client-side filtering");
             }
             else
             {
                 errorMessage = result.Error.Message;
                 acquisti = new List<AcquistoDto>();
-                totalCount = 0;
                 Console.WriteLine($"Error loading purchases: {result.Error.Message}");
             }
         }
@@ -189,7 +193,6 @@ else
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
             acquisti = new List<AcquistoDto>();
-            totalCount = 0;
         }
         finally
         {
@@ -197,79 +200,6 @@ else
         }
     }
 
-    private async Task LoadData(LoadDataArgs args)
-    {
-        try
-        {
-            isLoading = true;
-            errorMessage = null;
-
-            // Gestisce l'ordinamento
-            string orderBy = "DataAcquisto desc"; // default
-            if (!string.IsNullOrEmpty(args.OrderBy))
-            {
-                orderBy = args.OrderBy;
-            }
-
-            // Gestisce i filtri
-            var filterParts = new List<string>();
-            if (args.Filters != null)
-            {
-                foreach (var filter in args.Filters)
-                {
-                    if (filter.FilterValue != null && !string.IsNullOrEmpty(filter.FilterValue.ToString()))
-                    {
-                        var filterValue = filter.FilterValue.ToString();
-                        var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filterValue);
-                        filterParts.Add(filterExpression);
-                    }
-                }
-            }
-
-            // Aggiunge filtri personalizzati
-            if (selectedUtenteId.HasValue)
-            {
-                filterParts.Add($"UtenteId == \"{selectedUtenteId.Value}\"");
-            }
-            if (selectedGiocoId.HasValue)
-            {
-                filterParts.Add($"GiocoId == \"{selectedGiocoId.Value}\"");
-            }
-
-            var request = new FilterRequest
-            {
-                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
-                PageSize = args.Top ?? 20,
-                OrderBy = orderBy,
-                Filter = filterParts.Any() ? string.Join(" AND ", filterParts) : null
-            };
-
-            Console.WriteLine($"Loading data: Page={request.PageNumber}, Size={request.PageSize}, OrderBy={request.OrderBy}, Filter={request.Filter}");
-
-            var result = await AcquistoService.GetPagedAsync(request);
-            if (result.IsSuccess)
-            {
-                acquisti = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-            }
-            else
-            {
-                errorMessage = result.Error.Message;
-                acquisti = new List<AcquistoDto>();
-                totalCount = 0;
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Errore durante il caricamento: {ex.Message}";
-            acquisti = new List<AcquistoDto>();
-            totalCount = 0;
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
 
     private void AggiungiAcquisto()
     {
@@ -311,11 +241,8 @@ else
                 column.ClearFilters();
             });
 
-            // Clear the data source to force reload
-            acquisti.Clear();
-
-            // Reload the grid
-            await grid.Reload();
+            // Reload all data
+            await LoadInitialData();
         }
 
         // Force UI update to reset dropdowns and grid

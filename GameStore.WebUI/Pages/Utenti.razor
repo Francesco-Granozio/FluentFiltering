@@ -101,11 +101,18 @@
     private List<UtenteDto> utenti = new List<UtenteDto>();
     private bool isLoading = false;
     private string? errorMessage;
-    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadInitialData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && dynamicGrid != null)
+        {
+            await dynamicGrid.EnsurePaginationVisible();
+        }
     }
 
     private async Task LoadInitialData()
@@ -118,7 +125,7 @@
             var request = new FilterRequest
             {
                 PageNumber = 1,
-                PageSize = 20,
+                PageSize = 10000, // Carica un numero molto alto per ottenere tutti i record
                 OrderBy = "DataRegistrazione desc"
             };
 
@@ -126,15 +133,13 @@
             if (result.IsSuccess)
             {
                 utenti = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
                 errorMessage = null;
-                Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
+                Console.WriteLine($"Loaded {utenti.Count()} users for client-side filtering");
             }
             else
             {
                 errorMessage = result.Error.Message;
                 utenti = new List<UtenteDto>();
-                totalCount = 0;
                 Console.WriteLine($"Error loading users: {result.Error.Message}");
             }
         }
@@ -142,7 +147,6 @@
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
             utenti = new List<UtenteDto>();
-            totalCount = 0;
         }
         finally
         {
@@ -150,72 +154,6 @@
         }
     }
 
-    private async Task LoadData(LoadDataArgs args)
-    {
-        try
-        {
-            isLoading = true;
-            errorMessage = null;
-
-            // Gestisce l'ordinamento
-            string orderBy = "DataRegistrazione desc"; // default
-            if (!string.IsNullOrEmpty(args.OrderBy))
-            {
-                orderBy = args.OrderBy;
-            }
-
-            // Gestisce i filtri
-            var filterParts = new List<string>();
-            if (args.Filters != null)
-            {
-                foreach (var filter in args.Filters)
-                {
-                    if (filter.FilterValue != null && !string.IsNullOrEmpty(filter.FilterValue.ToString()))
-                    {
-                        var filterValue = filter.FilterValue.ToString();
-                        var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filterValue);
-                        filterParts.Add(filterExpression);
-                    }
-                }
-            }
-
-            var request = new FilterRequest
-            {
-                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
-                PageSize = args.Top ?? 20,
-                OrderBy = orderBy,
-                Filter = filterParts.Any() ? string.Join(" AND ", filterParts) : null
-            };
-
-            Console.WriteLine($"Loading data: Page={request.PageNumber}, Size={request.PageSize}, OrderBy={request.OrderBy}, Filter={request.Filter}");
-
-            var result = await UtenteService.GetPagedAsync(request);
-            if (result.IsSuccess)
-            {
-                utenti = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-                errorMessage = null;
-                Console.WriteLine($"Loaded {utenti.Count()} users, total: {totalCount}");
-            }
-            else
-            {
-                errorMessage = result.Error.Message;
-                utenti = new List<UtenteDto>();
-                totalCount = 0;
-                Console.WriteLine($"Error loading users: {result.Error.Message}");
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Errore durante il caricamento: {ex.Message}";
-            utenti = new List<UtenteDto>();
-            totalCount = 0;
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
 
     private void AggiungiUtente()
     {
@@ -235,12 +173,8 @@
                 column.ClearFilters();
             });
             
-            // Clear the data source to force reload
-            utenti.Clear();
-            
-            // Reload the grid
-            await grid.Reload();
-            StateHasChanged();
+            // Reload all data
+            await LoadInitialData();
         }
     }
 

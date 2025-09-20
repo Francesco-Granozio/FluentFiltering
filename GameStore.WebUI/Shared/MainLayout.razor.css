@@ -78,3 +78,51 @@ main {
         padding-right: 2rem !important;
     }
 }
+
+/* Dynamic Grid Styles */
+.dynamic-grid-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    max-height: 80vh;
+}
+
+.dynamic-grid-container .rz-datagrid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dynamic-grid-container .rz-datagrid .rz-datagrid-tablewrapper {
+    flex: 1;
+    overflow: auto;
+}
+
+.dynamic-grid-container .rz-paginator {
+    flex-shrink: 0;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    padding: 0.5rem;
+}
+
+/* Ensure pagination is always visible */
+.rz-paginator {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Fix for Radzen DataGrid pagination */
+.rz-datagrid .rz-paginator {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    z-index: 100;
+}

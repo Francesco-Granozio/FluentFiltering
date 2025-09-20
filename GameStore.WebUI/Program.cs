@@ -5,6 +5,7 @@ using GameStore.Infrastructure.Interceptors;
 using GameStore.Infrastructure.Seeding;
 using GameStore.Mapping;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Reflection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -19,18 +20,35 @@ builder.Services.AddRadzenComponents();
 
 // Registrazione DbContext con interceptor per auditing e soft delete
 builder.Services.AddScoped<AuditableEntitySaveChangesInterceptor>();
+
+// Configurazione DbContext per Blazor Server
 builder.Services.AddDbContext<ApplicationDbContext>((provider, options) =>
 {
     AuditableEntitySaveChangesInterceptor interceptor = provider.GetRequiredService<AuditableEntitySaveChangesInterceptor>();
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .AddInterceptors(interceptor);
-});
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+        sqlOptions.CommandTimeout(30);
+    })
+    .AddInterceptors(interceptor)
+    // Configurazioni per Blazor Server
+    .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
+    .EnableDetailedErrors(builder.Environment.IsDevelopment())
+    .ConfigureWarnings(warnings => warnings.Throw(
+        RelationalEventId.MultipleCollectionIncludeWarning));
+}, ServiceLifetime.Scoped);
 
 // Registrazione del seeder
 builder.Services.AddScoped<IDataSeeder, DatabaseSeeder>();
 
 // Registrazione Infrastructure services
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Registrazione DbContext Factory per gestire meglio le istanze in Blazor Server
+builder.Services.AddScoped<IDbContextFactory, DbContextFactory>();
 
 // Registrazione AutoMapper
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile).Assembly));
