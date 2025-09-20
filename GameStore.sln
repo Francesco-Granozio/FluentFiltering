@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameStore.WebUI", "GameStor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameStore.Shared", "GameStore.Shared\GameStore.Shared.csproj", "{63431B96-B148-4335-9484-3BC8E762D46D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameStore.Mapping", "GameStore.Mapping\GameStore.Mapping.csproj", "{CCC17574-EBA0-47D4-8247-629702D4D0FC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{63431B96-B148-4335-9484-3BC8E762D46D}.Release|x64.Build.0 = Release|Any CPU
 		{63431B96-B148-4335-9484-3BC8E762D46D}.Release|x86.ActiveCfg = Release|Any CPU
 		{63431B96-B148-4335-9484-3BC8E762D46D}.Release|x86.Build.0 = Release|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Debug|x64.Build.0 = Debug|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Debug|x86.Build.0 = Debug|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Release|x64.ActiveCfg = Release|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Release|x64.Build.0 = Release|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Release|x86.ActiveCfg = Release|Any CPU
+		{CCC17574-EBA0-47D4-8247-629702D4D0FC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

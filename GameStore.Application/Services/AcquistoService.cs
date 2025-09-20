@@ -1,4 +1,5 @@
 using GameStore.Domain.Entities;
+using GameStore.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -10,13 +11,13 @@ namespace GameStore.Application.Services;
 public class AcquistoService : IAcquistoService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IMappingService _mappingService;
     private readonly ILogger<AcquistoService> _logger;
 
-    public AcquistoService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<AcquistoService> logger)
+    public AcquistoService(IUnitOfWork unitOfWork, IMappingService mappingService, ILogger<AcquistoService> logger)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _mappingService = mappingService;
         _logger = logger;
     }
 
@@ -28,7 +29,7 @@ public class AcquistoService : IAcquistoService
             _logger.LogWarning("Acquisto con ID {AcquistoId} non trovato.", id);
             return Result<AcquistoDto>.Failure(Errors.Acquisti.NotFound);
         }
-        return _mapper.Map<AcquistoDto>(acquisto);
+        return _mappingService.Map<Acquisto, AcquistoDto>(acquisto);
     }
 
     public async Task<Result<PagedResult<AcquistoDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
@@ -41,7 +42,7 @@ public class AcquistoService : IAcquistoService
             includes: q => q.Include(a => a.Utente).Include(a => a.Gioco),
             cancellationToken: cancellationToken);
 
-        IEnumerable<AcquistoDto> dtoList = _mapper.Map<IEnumerable<AcquistoDto>>(pagedResult.Items);
+        IEnumerable<AcquistoDto> dtoList = _mappingService.Map<Acquisto, AcquistoDto>(pagedResult.Items);
 
         return new PagedResult<AcquistoDto>
         {
@@ -91,13 +92,13 @@ public class AcquistoService : IAcquistoService
             return Result<AcquistoDto>.Failure(Errors.Acquisti.GameNotFound);
         }
 
-        Acquisto acquisto = _mapper.Map<Acquisto>(dto);
+        Acquisto acquisto = _mappingService.Map<CreaAcquistoDto, Acquisto>(dto);
         await _unitOfWork.Acquisti.AddAsync(acquisto, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Acquisto creato con ID {AcquistoId} per utente {UtenteId} e gioco {GiocoId}.",
             acquisto.Id, acquisto.UtenteId, acquisto.GiocoId);
-        return _mapper.Map<AcquistoDto>(acquisto);
+        return _mappingService.Map<Acquisto, AcquistoDto>(acquisto);
     }
 
     public async Task<Result<AcquistoDto>> UpdateAsync(AggiornaAcquistoDto dto, CancellationToken cancellationToken = default)
@@ -129,12 +130,12 @@ public class AcquistoService : IAcquistoService
             }
         }
 
-        _mapper.Map(dto, acquisto);
+        _mappingService.Map(dto, acquisto);
         _unitOfWork.Acquisti.Update(acquisto);
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Acquisto con ID {AcquistoId} aggiornato.", acquisto.Id);
-        return _mapper.Map<AcquistoDto>(acquisto);
+        return _mappingService.Map<Acquisto, AcquistoDto>(acquisto);
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -162,7 +163,7 @@ public class AcquistoService : IAcquistoService
     public async Task<Result<IEnumerable<AcquistoDto>>> GetByUtenteAsync(Guid utenteId, CancellationToken cancellationToken = default)
     {
         IEnumerable<Acquisto> acquisti = await _unitOfWork.Acquisti.GetByUtenteIdAsync(utenteId, false, cancellationToken);
-        IEnumerable<AcquistoDto> dtoList = _mapper.Map<IEnumerable<AcquistoDto>>(acquisti);
+        IEnumerable<AcquistoDto> dtoList = _mappingService.Map<IEnumerable<Acquisto>, IEnumerable<AcquistoDto>>(acquisti);
         return Result<IEnumerable<AcquistoDto>>.Success(dtoList);
     }
 }

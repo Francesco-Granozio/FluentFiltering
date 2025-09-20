@@ -1,4 +1,5 @@
 using GameStore.Domain.Entities;
+using GameStore.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -10,13 +11,13 @@ namespace GameStore.Application.Services;
 public class RecensioneService : IRecensioneService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IMappingService _mappingService;
     private readonly ILogger<RecensioneService> _logger;
 
-    public RecensioneService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<RecensioneService> logger)
+    public RecensioneService(IUnitOfWork unitOfWork, IMappingService mappingService, ILogger<RecensioneService> logger)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _mappingService = mappingService;
         _logger = logger;
     }
 
@@ -28,7 +29,7 @@ public class RecensioneService : IRecensioneService
             _logger.LogWarning("Recensione con ID {RecensioneId} non trovata.", id);
             return Result<RecensioneDto>.Failure(Errors.Recensioni.NotFound);
         }
-        return _mapper.Map<RecensioneDto>(recensione);
+        return _mappingService.Map<Recensione, RecensioneDto>(recensione);
     }
 
     public async Task<Result<PagedResult<RecensioneDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
@@ -41,7 +42,7 @@ public class RecensioneService : IRecensioneService
             includes: q => q.Include(r => r.Utente).Include(r => r.Gioco),
             cancellationToken: cancellationToken);
 
-        IEnumerable<RecensioneDto> dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(pagedResult.Items);
+        IEnumerable<RecensioneDto> dtoList = _mappingService.Map<Recensione, RecensioneDto>(pagedResult.Items);
 
         return new PagedResult<RecensioneDto>
         {
@@ -108,13 +109,13 @@ public class RecensioneService : IRecensioneService
             }
         }
 
-        Recensione recensione = _mapper.Map<Recensione>(dto);
+        Recensione recensione = _mappingService.Map<CreaRecensioneDto, Recensione>(dto);
         await _unitOfWork.Recensioni.AddAsync(recensione, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Recensione creata con ID {RecensioneId} per utente {UtenteId} e gioco {GiocoId}.",
             recensione.Id, recensione.UtenteId, recensione.GiocoId);
-        return _mapper.Map<RecensioneDto>(recensione);
+        return _mappingService.Map<Recensione, RecensioneDto>(recensione);
     }
 
     public async Task<Result<RecensioneDto>> UpdateAsync(AggiornaRecensioneDto dto, CancellationToken cancellationToken = default)
@@ -156,12 +157,12 @@ public class RecensioneService : IRecensioneService
             }
         }
 
-        _mapper.Map(dto, recensione);
+        _mappingService.Map(dto, recensione);
         _unitOfWork.Recensioni.Update(recensione);
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Recensione con ID {RecensioneId} aggiornata.", recensione.Id);
-        return _mapper.Map<RecensioneDto>(recensione);
+        return _mappingService.Map<Recensione, RecensioneDto>(recensione);
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -189,7 +190,7 @@ public class RecensioneService : IRecensioneService
     public async Task<Result<IEnumerable<RecensioneDto>>> GetByGiocoAsync(Guid giocoId, CancellationToken cancellationToken = default)
     {
         IEnumerable<Recensione> recensioni = await _unitOfWork.Recensioni.GetByGiocoIdAsync(giocoId, false, cancellationToken);
-        IEnumerable<RecensioneDto> dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(recensioni);
+        IEnumerable<RecensioneDto> dtoList = _mappingService.Map<IEnumerable<Recensione>, IEnumerable<RecensioneDto>>(recensioni);
         return Result<IEnumerable<RecensioneDto>>.Success(dtoList);
     }
 }

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GameStore.Application\GameStore.Application.csproj" />
     <ProjectReference Include="..\GameStore.Infrastructure\GameStore.Infrastructure.csproj" />
+    <ProjectReference Include="..\GameStore.Mapping\GameStore.Mapping.csproj" />
     <ProjectReference Include="..\GameStore.Shared\GameStore.Shared.csproj" />
   </ItemGroup>
 

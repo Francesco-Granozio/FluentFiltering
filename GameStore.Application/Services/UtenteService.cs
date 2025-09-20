@@ -1,3 +1,4 @@
+using GameStore.Mapping;
 using Microsoft.Extensions.Logging;
 
 namespace GameStore.Application.Services;
@@ -8,13 +9,13 @@ namespace GameStore.Application.Services;
 public class UtenteService : IUtenteService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IMappingService _mappingService;
     private readonly ILogger<UtenteService> _logger;
 
-    public UtenteService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UtenteService> logger)
+    public UtenteService(IUnitOfWork unitOfWork, IMappingService mappingService, ILogger<UtenteService> logger)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _mappingService = mappingService;
         _logger = logger;
     }
 
@@ -27,7 +28,7 @@ public class UtenteService : IUtenteService
             if (utente == null)
                 return Result<UtenteDto>.Failure(Errors.Utenti.NotFound);
 
-            UtenteDto dto = _mapper.Map<UtenteDto>(utente);
+            UtenteDto dto = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(utente);
             return Result<UtenteDto>.Success(dto);
         }
         catch (Exception ex)
@@ -44,7 +45,7 @@ public class UtenteService : IUtenteService
             PagedResult<Domain.Entities.Utente> pagedResult = await _unitOfWork.Utenti.GetPagedAsync(request, null, null, cancellationToken);
             PagedResult<UtenteDto> dtoResult = new()
             {
-                Items = _mapper.Map<IEnumerable<UtenteDto>>(pagedResult.Items),
+                Items = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(pagedResult.Items),
                 TotalItems = pagedResult.TotalItems,
                 PageSize = pagedResult.PageSize,
                 PageNumber = pagedResult.PageNumber
@@ -63,12 +64,12 @@ public class UtenteService : IUtenteService
     {
         try
         {
-            Domain.Entities.Utente utente = _mapper.Map<Domain.Entities.Utente>(dto);
+            Domain.Entities.Utente utente = _mappingService.Map<CreaUtenteDto, Domain.Entities.Utente>(dto);
 
             await _unitOfWork.Utenti.AddAsync(utente, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
 
-            UtenteDto resultDto = _mapper.Map<UtenteDto>(utente);
+            UtenteDto resultDto = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(utente);
             _logger.LogInformation("Utente creato con successo: {UtenteId}", utente.Id);
 
             return Result<UtenteDto>.Success(resultDto);
@@ -89,11 +90,11 @@ public class UtenteService : IUtenteService
             if (existingUtente == null)
                 return Result<UtenteDto>.Failure(Errors.Utenti.NotFound);
 
-            _mapper.Map(dto, existingUtente);
+            _mappingService.Map(dto, existingUtente);
             _unitOfWork.Utenti.Update(existingUtente);
             await _unitOfWork.SaveChangesAsync();
 
-            UtenteDto resultDto = _mapper.Map<UtenteDto>(existingUtente);
+            UtenteDto resultDto = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(existingUtente);
             _logger.LogInformation("Utente aggiornato con successo: {UtenteId}", existingUtente.Id);
 
             return Result<UtenteDto>.Success(resultDto);

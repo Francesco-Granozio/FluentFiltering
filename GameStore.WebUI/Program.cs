@@ -1,9 +1,9 @@
 using FluentValidation;
-using GameStore.Application.Mapping;
 using GameStore.Infrastructure;
 using GameStore.Infrastructure.Extensions;
 using GameStore.Infrastructure.Interceptors;
 using GameStore.Infrastructure.Seeding;
+using GameStore.Mapping;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -35,8 +35,11 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // Registrazione AutoMapper
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile).Assembly));
 
+// Registrazione servizio di mapping astratto
+builder.Services.AddScoped<IMappingService, AutoMapperService>();
+
 // Registrazione FluentValidation
-builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(GameStore.Application.Mapping.MappingProfile)));
+builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(MappingProfile)));
 
 // Registrazione Application services
 builder.Services.AddScoped<IUtenteService, UtenteService>();

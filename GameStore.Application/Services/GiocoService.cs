@@ -1,4 +1,5 @@
 using GameStore.Domain.Entities;
+using GameStore.Mapping;
 using Microsoft.Extensions.Logging;
 
 namespace GameStore.Application.Services;
@@ -9,13 +10,13 @@ namespace GameStore.Application.Services;
 public class GiocoService : IGiocoService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IMappingService _mappingService;
     private readonly ILogger<GiocoService> _logger;
 
-    public GiocoService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GiocoService> logger)
+    public GiocoService(IUnitOfWork unitOfWork, IMappingService mappingService, ILogger<GiocoService> logger)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _mappingService = mappingService;
         _logger = logger;
     }
 
@@ -27,13 +28,13 @@ public class GiocoService : IGiocoService
             _logger.LogWarning("Gioco con ID {GiocoId} non trovato.", id);
             return Result<GiocoDto>.Failure(Errors.Giochi.NotFound);
         }
-        return _mapper.Map<GiocoDto>(gioco);
+        return _mappingService.Map<Gioco, GiocoDto>(gioco);
     }
 
     public async Task<Result<PagedResult<GiocoDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
     {
         PagedResult<Gioco> pagedResult = await _unitOfWork.Giochi.GetPagedAsync(request, cancellationToken: cancellationToken);
-        IEnumerable<GiocoDto> dtoList = _mapper.Map<IEnumerable<GiocoDto>>(pagedResult.Items);
+        IEnumerable<GiocoDto> dtoList = _mappingService.Map<Gioco, GiocoDto>(pagedResult.Items);
 
         return new PagedResult<GiocoDto>
         {
@@ -47,12 +48,12 @@ public class GiocoService : IGiocoService
 
     public async Task<Result<GiocoDto>> CreateAsync(CreaGiocoDto dto, CancellationToken cancellationToken = default)
     {
-        Gioco gioco = _mapper.Map<Gioco>(dto);
+        Gioco gioco = _mappingService.Map<CreaGiocoDto, Gioco>(dto);
         await _unitOfWork.Giochi.AddAsync(gioco, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Gioco {Titolo} creato con ID {GiocoId}.", gioco.Titolo, gioco.Id);
-        return _mapper.Map<GiocoDto>(gioco);
+        return _mappingService.Map<Gioco, GiocoDto>(gioco);
     }
 
     public async Task<Result<GiocoDto>> UpdateAsync(AggiornaGiocoDto dto, CancellationToken cancellationToken = default)
@@ -64,12 +65,12 @@ public class GiocoService : IGiocoService
             return Result<GiocoDto>.Failure(Errors.Giochi.NotFound);
         }
 
-        _mapper.Map(dto, gioco);
+        _mappingService.Map(dto, gioco);
         _unitOfWork.Giochi.Update(gioco);
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Gioco con ID {GiocoId} aggiornato.", gioco.Id);
-        return _mapper.Map<GiocoDto>(gioco);
+        return _mappingService.Map<Gioco, GiocoDto>(gioco);
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)

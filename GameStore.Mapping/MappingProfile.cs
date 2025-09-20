@@ -1,6 +1,4 @@
-using GameStore.Domain.Entities;
-
-namespace GameStore.Application.Mapping;
+namespace GameStore.Mapping;
 
 /// <summary>
 /// Profilo AutoMapper per le mappature tra entità e DTO
