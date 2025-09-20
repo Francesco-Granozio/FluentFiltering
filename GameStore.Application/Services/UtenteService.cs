@@ -6,35 +6,28 @@ namespace GameStore.Application.Services;
 /// <summary>
 /// Implementazione del servizio per la gestione degli utenti
 /// </summary>
-public class UtenteService : IUtenteService
+public class UtenteService : BaseService<Domain.Entities.Utente, UtenteDto>, IUtenteService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMappingService _mappingService;
-    private readonly ILogger<UtenteService> _logger;
-
     public UtenteService(IUnitOfWork unitOfWork, IMappingService mappingService, ILogger<UtenteService> logger)
+        : base(unitOfWork, mappingService, logger)
     {
-        _unitOfWork = unitOfWork;
-        _mappingService = mappingService;
-        _logger = logger;
     }
 
     public async Task<Result<UtenteDto>> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            Domain.Entities.Utente? utente = await _unitOfWork.Utenti.GetByIdAsync(id, includeDeleted, cancellationToken);
+            Domain.Entities.Utente? utente = await UnitOfWork.Utenti.GetByIdAsync(id, includeDeleted, cancellationToken);
 
             if (utente == null)
                 return Result<UtenteDto>.Failure(Errors.Utenti.NotFound);
 
-            UtenteDto dto = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(utente);
+            UtenteDto dto = MappingService.Map<Domain.Entities.Utente, UtenteDto>(utente);
             return Result<UtenteDto>.Success(dto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Errore durante il recupero dell'utente {UtenteId}", id);
-            return Result<UtenteDto>.Failure(Errors.General.DatabaseError);
+            return HandleException<UtenteDto>(ex, "il recupero", id);
         }
     }
 
@@ -42,21 +35,14 @@ public class UtenteService : IUtenteService
     {
         try
         {
-            PagedResult<Domain.Entities.Utente> pagedResult = await _unitOfWork.Utenti.GetPagedAsync(request, null, null, cancellationToken);
-            PagedResult<UtenteDto> dtoResult = new()
-            {
-                Items = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(pagedResult.Items),
-                TotalItems = pagedResult.TotalItems,
-                PageSize = pagedResult.PageSize,
-                PageNumber = pagedResult.PageNumber
-            };
+            PagedResult<Domain.Entities.Utente> pagedResult = await UnitOfWork.Utenti.GetPagedAsync(request, null, null, cancellationToken);
+            var dtoResult = MapPagedResult(pagedResult);
 
             return Result<PagedResult<UtenteDto>>.Success(dtoResult);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Errore durante il recupero paginato degli utenti");
-            return Result<PagedResult<UtenteDto>>.Failure(Errors.General.DatabaseError);
+            return HandleException<PagedResult<UtenteDto>>(ex, "il recupero degli utenti paginati");
         }
     }
 
@@ -64,19 +50,19 @@ public class UtenteService : IUtenteService
     {
         try
         {
-            Domain.Entities.Utente utente = _mappingService.Map<CreaUtenteDto, Domain.Entities.Utente>(dto);
+            Domain.Entities.Utente utente = MappingService.Map<CreaUtenteDto, Domain.Entities.Utente>(dto);
 
-            await _unitOfWork.Utenti.AddAsync(utente, cancellationToken);
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.Utenti.AddAsync(utente, cancellationToken);
+            await UnitOfWork.SaveChangesAsync();
 
-            UtenteDto resultDto = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(utente);
-            _logger.LogInformation("Utente creato con successo: {UtenteId}", utente.Id);
+            UtenteDto resultDto = MappingService.Map<Domain.Entities.Utente, UtenteDto>(utente);
+            Logger.LogInformation("Utente creato con successo: {UtenteId}", utente.Id);
 
             return Result<UtenteDto>.Success(resultDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Errore durante la creazione dell'utente");
+            Logger.LogError(ex, "Errore durante la creazione dell'utente");
             return Result<UtenteDto>.Failure(Errors.General.DatabaseError);
         }
     }
@@ -85,23 +71,23 @@ public class UtenteService : IUtenteService
     {
         try
         {
-            Domain.Entities.Utente? existingUtente = await _unitOfWork.Utenti.GetByIdAsync(dto.Id, false, cancellationToken);
+            Domain.Entities.Utente? existingUtente = await UnitOfWork.Utenti.GetByIdAsync(dto.Id, false, cancellationToken);
 
             if (existingUtente == null)
                 return Result<UtenteDto>.Failure(Errors.Utenti.NotFound);
 
-            _mappingService.Map(dto, existingUtente);
-            _unitOfWork.Utenti.Update(existingUtente);
-            await _unitOfWork.SaveChangesAsync();
+            MappingService.Map(dto, existingUtente);
+            UnitOfWork.Utenti.Update(existingUtente);
+            await UnitOfWork.SaveChangesAsync();
 
-            UtenteDto resultDto = _mappingService.Map<Domain.Entities.Utente, UtenteDto>(existingUtente);
-            _logger.LogInformation("Utente aggiornato con successo: {UtenteId}", existingUtente.Id);
+            UtenteDto resultDto = MappingService.Map<Domain.Entities.Utente, UtenteDto>(existingUtente);
+            Logger.LogInformation("Utente aggiornato con successo: {UtenteId}", existingUtente.Id);
 
             return Result<UtenteDto>.Success(resultDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Errore durante l'aggiornamento dell'utente {UtenteId}", dto.Id);
+            Logger.LogError(ex, "Errore durante l'aggiornamento dell'utente {UtenteId}", dto.Id);
             return Result<UtenteDto>.Failure(Errors.General.DatabaseError);
         }
     }
@@ -110,20 +96,20 @@ public class UtenteService : IUtenteService
     {
         try
         {
-            Domain.Entities.Utente? utente = await _unitOfWork.Utenti.GetByIdAsync(id, false, cancellationToken);
+            Domain.Entities.Utente? utente = await UnitOfWork.Utenti.GetByIdAsync(id, false, cancellationToken);
 
             if (utente == null)
                 return Result.Failure(Errors.Utenti.NotFound);
 
-            _unitOfWork.Utenti.Remove(utente);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.Utenti.Remove(utente);
+            await UnitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Utente cancellato con successo: {UtenteId}", id);
+            Logger.LogInformation("Utente cancellato con successo: {UtenteId}", id);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Errore durante la cancellazione dell'utente {UtenteId}", id);
+            Logger.LogError(ex, "Errore durante la cancellazione dell'utente {UtenteId}", id);
             return Result.Failure(Errors.General.DatabaseError);
         }
     }
@@ -132,12 +118,12 @@ public class UtenteService : IUtenteService
     {
         try
         {
-            bool exists = await _unitOfWork.Utenti.ExistsAsync(x => x.Id == id, false, cancellationToken);
+            bool exists = await UnitOfWork.Utenti.ExistsAsync(x => x.Id == id, false, cancellationToken);
             return Result<bool>.Success(exists);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Errore durante la verifica dell'esistenza dell'utente {UtenteId}", id);
+            Logger.LogError(ex, "Errore durante la verifica dell'esistenza dell'utente {UtenteId}", id);
             return Result<bool>.Failure(Errors.General.DatabaseError);
         }
     }

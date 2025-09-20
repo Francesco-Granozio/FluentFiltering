@@ -1,0 +1,156 @@
+@page "/giochi-acquistati"
+@using GameStore.Application.Services
+@using GameStore.Shared.DTOs
+@using GameStore.Shared.DTOs.Common
+@using GameStore.Shared.Common
+@inject IGiochiAcquistatiService GiochiAcquistatiService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Giochi Acquistati - GameStore AI</PageTitle>
+
+<div class="container-fluid">
+    <!-- Header Card -->
+    <div class="apple-card compact-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-shopping-cart me-3 text-primary" style="font-size: 1.5rem;"></i>
+                <div>
+                    <h4 class="mb-0">Giochi Acquistati</h4>
+                    <p class="text-muted mb-0">Visualizza tutti i giochi acquistati dagli utenti</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" 
+                              Icon="refresh" 
+                              Text="Aggiorna" 
+                              Click="CaricaDati" 
+                              class="apple-btn-primary" />
+                <RadzenButton ButtonStyle="ButtonStyle.Secondary" 
+                              Icon="filter_alt_off" 
+                              Text="Pulisci Filtri" 
+                              Click="ClearFilters" 
+                              class="apple-btn-secondary" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" 
+                     Text="@errorMessage" 
+                     class="mt-3" />
+    }
+
+    <!-- Data Grid -->
+    <div class="dynamic-grid-container mt-4">
+        <div class="apple-card">
+            <DynamicGridComponent>
+                <RadzenDataGrid @ref="grid" 
+                                Data="@giochiAcquistati" 
+                                TItem="GiochiAcquistatiDto"
+                                AllowPaging="true" 
+                                AllowSorting="true"
+                                AllowFiltering="true"
+                                AllowFilteringByColumn="true"
+                                FilterMode="FilterMode.Advanced"
+                                PageSize="20"
+                                PagerHorizontalAlign="HorizontalAlign.Left"
+                                ShowPagingSummary="true"
+                                PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
+                                Loading="@isLoading">
+
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteUsername" Title="Username" Width="120px" />
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteNomeCompleto" Title="Nome Completo" Width="150px" />
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="200px" />
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Gioco" Width="200px" />
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="300px" />
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPrezzo" Title="Prezzo" Width="100px">
+                            <Template>
+                                @context.GiocoPrezzo.ToString("C2")
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="150px">
+                            <Template>
+                                @context.DataAcquisto.ToString("dd/MM/yyyy HH:mm")
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataCreazione" Title="Data Creazione" Width="150px">
+                            <Template>
+                                @context.DataCreazione.ToString("dd/MM/yyyy HH:mm")
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </DynamicGridComponent>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<GiochiAcquistatiDto> giochiAcquistati = new List<GiochiAcquistatiDto>();
+    private bool isLoading = false;
+    private string? errorMessage;
+    private RadzenDataGrid<GiochiAcquistatiDto>? grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CaricaDati();
+    }
+
+    private async Task CaricaDati()
+    {
+        try
+        {
+            errorMessage = null;
+            await LoadInitialData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il caricamento: {ex.Message}";
+        }
+    }
+
+    private async Task LoadInitialData()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            var request = new FilterRequest
+            {
+                PageNumber = 1,
+                PageSize = 10000, // Carica un numero molto alto per ottenere tutti i record
+                OrderBy = "DataAcquisto desc"
+            };
+
+            var result = await GiochiAcquistatiService.GetPagedAsync(request);
+            if (result.IsSuccess)
+            {
+                giochiAcquistati = result.Value.Items.ToList();
+                Console.WriteLine($"Loaded {giochiAcquistati.Count()} purchased games for client-side filtering");
+            }
+            else
+            {
+                errorMessage = result.Error.Message;
+                giochiAcquistati = new List<GiochiAcquistatiDto>();
+                Console.WriteLine($"Error loading purchased games: {result.Error.Message}");
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+        if (grid != null)
+        {
+            grid.Reset(false, false);
+            await LoadInitialData();
+        }
+        StateHasChanged();
+    }
+}

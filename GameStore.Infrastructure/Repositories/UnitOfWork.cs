@@ -14,12 +14,14 @@ public class UnitOfWork : IUnitOfWork
         Giochi = new GiocoRepository(_context);
         Acquisti = new AcquistoRepository(_context);
         Recensioni = new RecensioneRepository(_context);
+        GiochiAcquistati = new GiochiAcquistatiRepository(_context);
     }
 
     public IUtenteRepository Utenti { get; }
     public IGiocoRepository Giochi { get; }
     public IAcquistoRepository Acquisti { get; }
     public IRecensioneRepository Recensioni { get; }
+    public IGiochiAcquistatiRepository GiochiAcquistati { get; }
 
     public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();

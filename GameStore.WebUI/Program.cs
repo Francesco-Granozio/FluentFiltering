@@ -47,6 +47,7 @@ builder.Services.AddScoped<IGiocoService, GiocoService>();
 builder.Services.AddScoped<IAcquistoService, AcquistoService>();
 builder.Services.AddScoped<IRecensioneService, RecensioneService>();
 builder.Services.AddScoped<IStatisticheService, StatisticheService>();
+builder.Services.AddScoped<IGiochiAcquistatiService, GiochiAcquistatiService>();
 
 // Registrazione API Controllers
 builder.Services.AddControllers();

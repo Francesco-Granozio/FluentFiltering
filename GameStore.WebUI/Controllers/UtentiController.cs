@@ -67,15 +67,9 @@ public class UtentiController : BaseController
         CancellationToken cancellationToken = default)
     {
         // Validazione con FluentValidation
-        FluentValidation.Results.ValidationResult validationResult = await _createValidator.ValidateAsync(dto, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            foreach (FluentValidation.Results.ValidationFailure? error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-            return BadRequest(ModelState);
-        }
+        var validationResult = await ValidateAsync(_createValidator, dto, cancellationToken);
+        if (validationResult != null)
+            return validationResult;
 
         Result<UtenteDto> result = await _utenteService.CreateAsync(dto, cancellationToken);
         return HandleResult(result);
@@ -95,15 +89,9 @@ public class UtentiController : BaseController
         CancellationToken cancellationToken = default)
     {
         // Validazione con FluentValidation
-        FluentValidation.Results.ValidationResult validationResult = await _updateValidator.ValidateAsync(dto, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            foreach (FluentValidation.Results.ValidationFailure? error in validationResult.Errors)
-            {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-            }
-            return BadRequest(ModelState);
-        }
+        var validationResult = await ValidateAsync(_updateValidator, dto, cancellationToken);
+        if (validationResult != null)
+            return validationResult;
 
         if (id != dto.Id)
         {

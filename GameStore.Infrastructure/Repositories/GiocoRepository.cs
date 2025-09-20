@@ -28,23 +28,23 @@ public class GiocoRepository : RepositoryGenerico<Gioco>, IGiocoRepository
 
     public async Task<IEnumerable<Gioco>> GetByGenereAsync(string genere, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
-            .Where(g => g.Genere == genere)
-            .ToListAsync(cancellationToken);
+        var query = QueryHelper.CreateBaseQuery(_dbSet, false)
+                              .FilterByProperty("Genere", genere, exactMatch: true);
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Gioco>> GetByPiattaformaAsync(string piattaforma, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
-            .Where(g => g.Piattaforma == piattaforma)
-            .ToListAsync(cancellationToken);
+        var query = QueryHelper.CreateBaseQuery(_dbSet, false)
+                              .FilterByProperty("Piattaforma", piattaforma, exactMatch: true);
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Gioco>> GetBySviluppatoreAsync(string sviluppatore, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
-            .Where(g => g.Sviluppatore == sviluppatore)
-            .ToListAsync(cancellationToken);
+        var query = QueryHelper.CreateBaseQuery(_dbSet, false)
+                              .FilterByProperty("Sviluppatore", sviluppatore, exactMatch: true);
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)

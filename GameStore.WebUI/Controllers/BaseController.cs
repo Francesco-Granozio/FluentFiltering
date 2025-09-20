@@ -1,7 +1,9 @@
+using FluentValidation;
+
 namespace GameStore.WebUI.Controllers;
 
 /// <summary>
-/// Controller base con metodi helper per gestire i Result
+/// Controller base con metodi helper per gestire i Result e la validazione
 /// </summary>
 public abstract class BaseController : ControllerBase
 {
@@ -68,5 +70,30 @@ public abstract class BaseController : ControllerBase
             ErrorType.Unauthorized => Unauthorized(new { error = result.Error.Message, type = result.Error.Type.ToString() }),
             _ => StatusCode(500, new { error = result.Error.Message, type = result.Error.Type.ToString() })
         };
+    }
+
+    /// <summary>
+    /// Valida un DTO usando FluentValidation
+    /// </summary>
+    /// <typeparam name="T">Tipo del DTO</typeparam>
+    /// <param name="validator">Validator per il DTO</param>
+    /// <param name="dto">DTO da validare</param>
+    /// <param name="cancellationToken">Token di cancellazione</param>
+    /// <returns>BadRequest se la validazione fallisce, null se passa</returns>
+    protected async Task<ActionResult?> ValidateAsync<T>(
+        IValidator<T> validator, 
+        T dto, 
+        CancellationToken cancellationToken = default)
+    {
+        var validationResult = await validator.ValidateAsync(dto, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+            return BadRequest(ModelState);
+        }
+        return null;
     }
 }

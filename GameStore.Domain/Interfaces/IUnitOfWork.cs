@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     IGiocoRepository Giochi { get; }
     IAcquistoRepository Acquisti { get; }
     IRecensioneRepository Recensioni { get; }
+    IGiochiAcquistatiRepository GiochiAcquistati { get; }
 
     Task<int> SaveChangesAsync();
     Task<object> BeginTransactionAsync();
