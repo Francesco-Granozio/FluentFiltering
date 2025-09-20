@@ -5,9 +5,13 @@
 
 <PageTitle>Dashboard - GameStore AI</PageTitle>
 
-<div class="dashboard-header mb-4">
-    <h1><span class="oi oi-cpu" aria-hidden="true"></span>GameStore AI Dashboard</h1>
-    <p class="lead">Benvenuto nella piattaforma di gestione GameStore potenziata dall'Intelligenza Artificiale.</p>
+<div class="apple-card mb-4">
+    <div class="text-center">
+        <h1 class="mb-3">
+            <span class="oi oi-cpu" aria-hidden="true"></span> GameStore AI Dashboard
+        </h1>
+        <p class="text-muted fs-5 mb-0">Benvenuto nella piattaforma di gestione GameStore potenziata dall'Intelligenza Artificiale</p>
+    </div>
 </div>
 
 @if (isLoading)
@@ -30,64 +34,56 @@ else if (statistiche != null)
     <!-- Statistiche Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-uppercase">Utenti Totali</h6>
-                            <h3 class="mb-0">@statistiche.TotaleUtenti</h3>
-                        </div>
-                        <div class="stat-icon">
-                            <span class="oi oi-people" aria-hidden="true"></span>
-                        </div>
+            <div class="apple-card stat-card bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-2" style="font-size: 12px; font-weight: 600; opacity: 0.9;">Utenti Totali</h6>
+                        <h2 class="mb-0 fw-bold">@statistiche.TotaleUtenti</h2>
+                    </div>
+                    <div class="stat-icon">
+                        <span class="oi oi-people" aria-hidden="true" style="font-size: 2rem; opacity: 0.8;"></span>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-uppercase">Giochi in Catalogo</h6>
-                            <h3 class="mb-0">@statistiche.TotaleGiochi</h3>
-                        </div>
-                        <div class="stat-icon">
-                            <span class="oi oi-monitor" aria-hidden="true"></span>
-                        </div>
+            <div class="apple-card stat-card bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-2" style="font-size: 12px; font-weight: 600; opacity: 0.9;">Giochi in Catalogo</h6>
+                        <h2 class="mb-0 fw-bold">@statistiche.TotaleGiochi</h2>
+                    </div>
+                    <div class="stat-icon">
+                        <span class="oi oi-monitor" aria-hidden="true" style="font-size: 2rem; opacity: 0.8;"></span>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-uppercase">Acquisti Totali</h6>
-                            <h3 class="mb-0">@statistiche.TotaleAcquisti</h3>
-                        </div>
-                        <div class="stat-icon">
-                            <span class="oi oi-cart" aria-hidden="true"></span>
-                        </div>
+            <div class="apple-card stat-card bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-2" style="font-size: 12px; font-weight: 600; opacity: 0.9;">Acquisti Totali</h6>
+                        <h2 class="mb-0 fw-bold">@statistiche.TotaleAcquisti</h2>
+                    </div>
+                    <div class="stat-icon">
+                        <span class="oi oi-cart" aria-hidden="true" style="font-size: 2rem; opacity: 0.8;"></span>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-uppercase">Recensioni</h6>
-                            <h3 class="mb-0">@statistiche.TotaleRecensioni</h3>
-                        </div>
-                        <div class="stat-icon">
-                            <span class="oi oi-star" aria-hidden="true"></span>
-                        </div>
+            <div class="apple-card stat-card bg-warning text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-uppercase mb-2" style="font-size: 12px; font-weight: 600; opacity: 0.9;">Recensioni</h6>
+                        <h2 class="mb-0 fw-bold">@statistiche.TotaleRecensioni</h2>
+                    </div>
+                    <div class="stat-icon">
+                        <span class="oi oi-star" aria-hidden="true" style="font-size: 2rem; opacity: 0.8;"></span>
                     </div>
                 </div>
             </div>
@@ -97,30 +93,24 @@ else if (statistiche != null)
     <!-- Statistiche Dettagliate -->
     <div class="row mb-4">
         <div class="col-md-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <span class="oi oi-dollar" aria-hidden="true"></span> Vendite
-                    </h5>
+            <div class="apple-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="oi oi-dollar me-2" aria-hidden="true" style="font-size: 1.5rem; color: var(--apple-green);"></span>
+                    <h5 class="mb-0 fw-semibold">Vendite</h5>
                 </div>
-                <div class="card-body">
-                    <h3 class="text-success">€@statistiche.ValoreVendite.ToString("N2")</h3>
-                    <p class="text-muted mb-0">Valore totale delle vendite</p>
-                </div>
+                <h2 class="text-success fw-bold mb-2">€@statistiche.ValoreVendite.ToString("N2")</h2>
+                <p class="text-muted mb-0">Valore totale delle vendite</p>
             </div>
         </div>
         
         <div class="col-md-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <span class="oi oi-star" aria-hidden="true"></span> Rating Medio
-                    </h5>
+            <div class="apple-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="oi oi-star me-2" aria-hidden="true" style="font-size: 1.5rem; color: var(--apple-yellow);"></span>
+                    <h5 class="mb-0 fw-semibold">Rating Medio</h5>
                 </div>
-                <div class="card-body">
-                    <h3 class="text-warning">@statistiche.MediaPunteggioRecensioni.ToString("F1")/5.0</h3>
-                    <p class="text-muted mb-0">Punteggio medio delle recensioni</p>
-                </div>
+                <h2 class="text-warning fw-bold mb-2">@statistiche.MediaPunteggioRecensioni.ToString("F1")/5.0</h2>
+                <p class="text-muted mb-0">Punteggio medio delle recensioni</p>
             </div>
         </div>
     </div>
@@ -128,40 +118,37 @@ else if (statistiche != null)
     <!-- Attività Recente -->
     <div class="row">
         <div class="col-md-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <span class="oi oi-clock" aria-hidden="true"></span> Attività Ultimo Mese
-                    </h5>
+            <div class="apple-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="oi oi-clock me-2" aria-hidden="true" style="font-size: 1.5rem; color: var(--apple-blue);"></span>
+                    <h5 class="mb-0 fw-semibold">Attività Ultimo Mese</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <h6 class="text-primary">@statistiche.AcquistiUltimoMese</h6>
-                            <small class="text-muted">Nuovi Acquisti</small>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="text-warning">@statistiche.RecensioniUltimoMese</h6>
-                            <small class="text-muted">Nuove Recensioni</small>
-                        </div>
+                <div class="row">
+                    <div class="col-6">
+                        <h4 class="text-primary fw-bold mb-1">@statistiche.AcquistiUltimoMese</h4>
+                        <small class="text-muted">Nuovi Acquisti</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning fw-bold mb-1">@statistiche.RecensioniUltimoMese</h4>
+                        <small class="text-muted">Nuove Recensioni</small>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="col-md-6 mb-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <span class="oi oi-cpu" aria-hidden="true"></span> AI Assistant
-                    </h5>
+            <div class="apple-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="oi oi-cpu me-2" aria-hidden="true" style="font-size: 1.5rem; color: var(--apple-purple);"></span>
+                    <h5 class="mb-0 fw-semibold">AI Assistant</h5>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted mb-2">Benvenuto nell'era dell'AI! Prossimamente:</p>
-                    <ul class="list-unstyled mb-0">
-                        <li><span class="oi oi-check text-success" aria-hidden="true"></span> Chat AI per supporto</li>
-                    </ul>
-                </div>
+                <p class="text-muted mb-3">Benvenuto nell'era dell'AI! Prossimamente:</p>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex align-items-center">
+                        <span class="oi oi-check me-2" aria-hidden="true" style="color: var(--apple-green);"></span>
+                        Chat AI per supporto
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

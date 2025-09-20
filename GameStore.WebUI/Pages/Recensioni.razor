@@ -10,23 +10,28 @@
 
 <PageTitle>Gestione Recensioni - GameStore AI</PageTitle>
 
-<div class="row mb-3">
-    <div class="col">
-        <h3>Gestione Recensioni</h3>
-    </div>
-    <div class="col-auto">
-        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="me-2" />
-        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuova Recensione" Click="AggiungiRecensione" />
+<div class="apple-card compact-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Gestione Recensioni</h1>
+            <p class="text-muted">Gestisci le recensioni degli utenti</p>
+        </div>
+        <div class="d-flex gap-2">
+            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="apple-btn-secondary" />
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuova Recensione" Click="AggiungiRecensione" class="apple-btn-primary" />
+        </div>
     </div>
 </div>
 
 @if (errorMessage != null)
 {
-    <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
+    <div class="apple-card mb-3">
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
+    </div>
 }
 
-
-<RadzenDataGrid @ref="grid" 
+<div class="apple-card">
+    <RadzenDataGrid @ref="grid" 
                 Data="@recensioni" 
                 TItem="RecensioneDto"
                 AllowPaging="true" 
@@ -102,6 +107,7 @@
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
+</div>
 
 @code {
     private RadzenDataGrid<RecensioneDto>? grid;

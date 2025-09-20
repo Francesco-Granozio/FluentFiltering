@@ -12,13 +12,16 @@
 
 <PageTitle>Gestione Acquisti - GameStore AI</PageTitle>
 
-<div class="row mb-3">
-    <div class="col">
-        <h3>Gestione Acquisti</h3>
-    </div>
-    <div class="col-auto">
-        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="me-2" />
-        <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuovo acquisto" Click="AggiungiAcquisto" />
+<div class="apple-card compact-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Gestione Acquisti</h1>
+            <p class="text-muted">Gestisci gli acquisti degli utenti</p>
+        </div>
+        <div class="d-flex gap-2">
+            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="filter_alt_off" Text="Pulisci Filtri" Click="ClearFilters" class="apple-btn-secondary" />
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="add" Text="Nuovo Acquisto" Click="AggiungiAcquisto" class="apple-btn-primary" />
+        </div>
     </div>
 </div>
 
@@ -34,11 +37,13 @@ else
 {
     @if (errorMessage != null)
     {
-        <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
+        <div class="apple-card mb-3">
+            <RadzenAlert AlertStyle="AlertStyle.Danger" Text="@errorMessage" />
+        </div>
     }
 
-
-    <RadzenDataGrid @ref="grid"
+    <div class="apple-card">
+        <RadzenDataGrid @ref="grid"
                     Data="@acquisti"
                     TItem="AcquistoDto"
                     AllowPaging="true"
@@ -112,6 +117,7 @@ else
             </RadzenDataGridColumn>
         </Columns>
     </RadzenDataGrid>
+    </div>
 }
 
 @code {
