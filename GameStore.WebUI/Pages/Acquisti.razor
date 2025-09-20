@@ -51,14 +51,12 @@ else
                         AllowSorting="true"
                         AllowFiltering="true"
                         AllowFilteringByColumn="true"
-                        FilterMode="FilterMode.SimpleWithMenu"
+                        FilterMode="FilterMode.Advanced"
                         PageSize="20"
-                        Count="@totalCount"
                         PagerHorizontalAlign="HorizontalAlign.Left"
                         ShowPagingSummary="true"
                         PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
-                        Loading="@isLoading"
-                        LoadData="@LoadData">
+                        Loading="@isLoading">
 
         <Columns>
             <RadzenDataGridColumn TItem="AcquistoDto" Property="UtenteUsername" Title="Utente" Width="150px" Filterable="true">

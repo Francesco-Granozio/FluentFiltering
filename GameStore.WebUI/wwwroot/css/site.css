@@ -337,6 +337,91 @@ h3 {
     }
 }
 
+/* Advanced Filter Styling */
+.rz-datagrid-filter-row {
+    background-color: var(--apple-gray-1);
+    border-bottom: 1px solid var(--apple-gray-2);
+}
+
+.rz-datagrid-filter-row .rz-dropdown,
+.rz-datagrid-filter-row .rz-inputtext {
+    border: 1px solid var(--apple-gray-3);
+    border-radius: var(--apple-radius-small);
+    font-size: 14px;
+    padding: 6px 8px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+.rz-datagrid-filter-row .rz-dropdown:focus,
+.rz-datagrid-filter-row .rz-inputtext:focus {
+    border-color: var(--apple-blue);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    outline: none;
+}
+
+.rz-datagrid-filter-row .rz-dropdown:hover,
+.rz-datagrid-filter-row .rz-inputtext:hover {
+    border-color: var(--apple-gray-5);
+}
+
+/* Advanced Filter Dialog */
+.rz-datagrid-filter-dialog {
+    border-radius: var(--apple-radius-medium);
+    box-shadow: var(--apple-shadow-heavy);
+    border: none;
+}
+
+.rz-datagrid-filter-dialog .rz-dialog-header {
+    background: linear-gradient(135deg, var(--apple-blue) 0%, var(--apple-blue-dark) 100%);
+    color: white;
+    border-radius: var(--apple-radius-medium) var(--apple-radius-medium) 0 0;
+    padding: 16px 20px;
+}
+
+.rz-datagrid-filter-dialog .rz-dialog-content {
+    padding: 20px;
+    background-color: #fff;
+}
+
+.rz-datagrid-filter-dialog .rz-dialog-footer {
+    padding: 16px 20px;
+    background-color: var(--apple-gray-1);
+    border-top: 1px solid var(--apple-gray-2);
+    border-radius: 0 0 var(--apple-radius-medium) var(--apple-radius-medium);
+}
+
+/* Filter Expression Builder */
+.rz-datagrid-filter-expression {
+    background-color: var(--apple-gray-1);
+    border: 1px solid var(--apple-gray-2);
+    border-radius: var(--apple-radius-medium);
+    padding: 12px;
+    margin: 8px 0;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--apple-gray-9);
+}
+
+/* Filter Buttons */
+.rz-datagrid-filter-dialog .rz-button {
+    border-radius: var(--apple-radius-small);
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.rz-datagrid-filter-dialog .rz-button.rz-button-primary {
+    background-color: var(--apple-blue);
+    border-color: var(--apple-blue);
+}
+
+.rz-datagrid-filter-dialog .rz-button.rz-button-primary:hover {
+    background-color: var(--apple-blue-dark);
+    border-color: var(--apple-blue-dark);
+    transform: translateY(-1px);
+}
+
 /* Compact header cards */
 .apple-card.compact-header {
     padding: 16px 24px;

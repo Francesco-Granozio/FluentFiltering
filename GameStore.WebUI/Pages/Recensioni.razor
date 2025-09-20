@@ -39,14 +39,12 @@
                     AllowSorting="true"
                     AllowFiltering="true"
                     AllowFilteringByColumn="true"
-                    FilterMode="FilterMode.SimpleWithMenu"
+                    FilterMode="FilterMode.Advanced"
                     PageSize="20"
-                    Count="@totalCount"
                     PagerHorizontalAlign="HorizontalAlign.Left"
                     ShowPagingSummary="true"
                     PagingSummaryFormat="Pagina {0} di {1} ({2} elementi)"
-                    Loading="@isLoading"
-                    LoadData="@LoadData">
+                    Loading="@isLoading">
     
     <Columns>
         <RadzenDataGridColumn TItem="RecensioneDto" Property="UtenteUsername" Title="Utente" Width="150px" Filterable="true">
@@ -116,9 +114,7 @@
     private DynamicGridComponent? dynamicGrid;
     private List<RecensioneDto> recensioni = new List<RecensioneDto>();
     private bool isLoading = false;
-    private bool isLoadingData = true;
     private string? errorMessage;
-    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,20 +125,13 @@
     {
         try
         {
-            isLoadingData = true;
             errorMessage = null;
-
-          
             // Carica le recensioni iniziali
             await LoadInitialData();
         }
         catch (Exception ex)
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
-        }
-        finally
-        {
-            isLoadingData = false;
         }
     }
 
@@ -153,10 +142,11 @@
             isLoading = true;
             errorMessage = null;
 
+            // Carica tutti i dati per il filtraggio client-side
             var request = new FilterRequest
             {
                 PageNumber = 1,
-                PageSize = 20,
+                PageSize = 10000, // Carica un numero molto alto per ottenere tutti i record
                 OrderBy = "DataCreazione desc"
             };
 
@@ -164,14 +154,12 @@
             if (result.IsSuccess)
             {
                 recensioni = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-                Console.WriteLine($"Loaded {recensioni.Count()} reviews, total: {totalCount}");
+                Console.WriteLine($"Loaded {recensioni.Count()} reviews for client-side filtering");
             }
             else
             {
                 errorMessage = result.Error.Message;
                 recensioni = new List<RecensioneDto>();
-                totalCount = 0;
                 Console.WriteLine($"Error loading reviews: {result.Error.Message}");
             }
         }
@@ -179,7 +167,6 @@
         {
             errorMessage = $"Errore durante il caricamento: {ex.Message}";
             recensioni = new List<RecensioneDto>();
-            totalCount = 0;
         }
         finally
         {
@@ -200,69 +187,6 @@
         };
     }
 
-    private async Task LoadData(LoadDataArgs args)
-    {
-        try
-        {
-            isLoading = true;
-            errorMessage = null;
-
-            // Gestisci l'ordinamento
-            var orderBy = "DataCreazione desc";
-            if (!string.IsNullOrEmpty(args.OrderBy))
-            {
-                orderBy = $"{args.OrderBy} {(args.Sorts?.FirstOrDefault()?.SortOrder == SortOrder.Descending ? "desc" : "asc")}";
-            }
-
-            // Gestisci i filtri della griglia
-            var filterString = string.Empty;
-            if (args.Filters != null && args.Filters.Any())
-            {
-                var filterParts = new List<string>();
-                foreach (var filter in args.Filters)
-                {
-                    var filterExpression = BuildFilterExpression(filter.Property, filter.FilterOperator.ToString(), filter.FilterValue?.ToString() ?? string.Empty);
-                    if (!string.IsNullOrEmpty(filterExpression))
-                    {
-                        filterParts.Add(filterExpression);
-                    }
-                }
-                filterString = string.Join(" AND ", filterParts);
-            }
-
-
-            var request = new FilterRequest
-            {
-                PageNumber = ((args.Skip ?? 0) / (args.Top ?? 20)) + 1,
-                PageSize = args.Top ?? 20,
-                OrderBy = orderBy,
-                Filter = filterString
-            };
-
-            var result = await RecensioneService.GetPagedAsync(request);
-            if (result.IsSuccess)
-            {
-                recensioni = result.Value.Items.ToList();
-                totalCount = result.Value.TotalItems;
-            }
-            else
-            {
-                errorMessage = result.Error.Message;
-                recensioni = new List<RecensioneDto>();
-                totalCount = 0;
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Errore durante il caricamento: {ex.Message}";
-            recensioni = new List<RecensioneDto>();
-            totalCount = 0;
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
 
 
     private void AggiungiRecensione()
@@ -279,17 +203,8 @@
             // Reset the grid and clear all filters
             grid.Reset(false, false);
             
-            // Clear filters on each column
-            grid.ColumnsCollection.ToList().ForEach(column =>
-            {
-                column.ClearFilters();
-            });
-            
-            // Clear the data source to force reload
-            recensioni.Clear();
-            
-            // Reload the grid
-            await grid.Reload();
+            // Reload all data for client-side filtering
+            await LoadInitialData();
         }
         
         // Force UI update to reset grid
