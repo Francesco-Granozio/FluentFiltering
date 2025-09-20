@@ -1,4 +1,4 @@
-namespace GameStore.Domain.DTOs.Common;
+namespace GameStore.Shared.DTOs.Common;
 
 /// <summary>
 /// Richiesta di filtro e paginazione per le query

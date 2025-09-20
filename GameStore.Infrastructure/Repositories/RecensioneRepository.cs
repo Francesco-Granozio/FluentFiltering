@@ -1,6 +1,4 @@
-using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Infrastructure.Repositories;
 
@@ -15,8 +13,8 @@ public class RecensioneRepository : RepositoryGenerico<Recensione>, IRecensioneR
 
     public async Task<IEnumerable<Recensione>> GetByUtenteIdAsync(Guid utenteId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Recensione> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -32,8 +30,8 @@ public class RecensioneRepository : RepositoryGenerico<Recensione>, IRecensioneR
 
     public async Task<IEnumerable<Recensione>> GetByGiocoIdAsync(Guid giocoId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Recensione> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -49,8 +47,8 @@ public class RecensioneRepository : RepositoryGenerico<Recensione>, IRecensioneR
 
     public async Task<Recensione?> GetByUtenteEGiocoAsync(Guid utenteId, Guid giocoId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Recensione> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -66,8 +64,8 @@ public class RecensioneRepository : RepositoryGenerico<Recensione>, IRecensioneR
 
     public async Task<IEnumerable<Recensione>> GetRecensioniVerificateAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Recensione> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -83,8 +81,8 @@ public class RecensioneRepository : RepositoryGenerico<Recensione>, IRecensioneR
 
     public async Task<double?> GetMediaPunteggiAsync(Guid giocoId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Recensione> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();

@@ -1,6 +1,4 @@
 using FluentValidation;
-using GameStore.Application.DTOs;
-using GameStore.Domain.Interfaces;
 
 namespace GameStore.Application.Validators;
 
@@ -15,7 +13,7 @@ public class CreaRecensioneDtoValidator : AbstractValidator<CreaRecensioneDto>
     private readonly IAcquistoRepository _acquistoRepository;
 
     public CreaRecensioneDtoValidator(
-        IUtenteRepository utenteRepository, 
+        IUtenteRepository utenteRepository,
         IGiocoRepository giocoRepository,
         IRecensioneRepository recensioneRepository,
         IAcquistoRepository acquistoRepository)
@@ -76,7 +74,7 @@ public class CreaRecensioneDtoValidator : AbstractValidator<CreaRecensioneDto>
 
     private async Task<bool> NotDuplicateReviewAsync(CreaRecensioneDto dto, CancellationToken cancellationToken)
     {
-        var existingReview = await _recensioneRepository.GetByUtenteEGiocoAsync(dto.UtenteId, dto.GiocoId, false, cancellationToken);
+        Domain.Entities.Recensione? existingReview = await _recensioneRepository.GetByUtenteEGiocoAsync(dto.UtenteId, dto.GiocoId, false, cancellationToken);
         return existingReview == null;
     }
 
@@ -89,12 +87,12 @@ public class CreaRecensioneDtoValidator : AbstractValidator<CreaRecensioneDto>
     private async Task<bool> VerifyAcquistoOwnershipAsync(CreaRecensioneDto dto, CancellationToken cancellationToken)
     {
         if (!dto.AcquistoId.HasValue) return true;
-        
+
         return await _acquistoRepository.ExistsAsync(
-            x => x.Id == dto.AcquistoId.Value && 
-                 x.UtenteId == dto.UtenteId && 
-                 x.GiocoId == dto.GiocoId, 
-            false, 
+            x => x.Id == dto.AcquistoId.Value &&
+                 x.UtenteId == dto.UtenteId &&
+                 x.GiocoId == dto.GiocoId,
+            false,
             cancellationToken);
     }
 }

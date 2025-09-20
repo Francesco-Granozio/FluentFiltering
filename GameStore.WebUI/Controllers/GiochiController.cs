@@ -1,8 +1,3 @@
-using GameStore.Application.DTOs;
-using GameStore.Domain.DTOs.Common;
-using GameStore.Application.Services;
-using Microsoft.AspNetCore.Mvc;
-
 namespace GameStore.WebUI.Controllers;
 
 /// <summary>
@@ -27,10 +22,10 @@ public class GiochiController : BaseController
     /// <returns>Lista paginata di giochi</returns>
     [HttpGet]
     public async Task<ActionResult<PagedResult<GiocoDto>>> GetPagedAsync(
-        [FromQuery] FilterRequest request, 
+        [FromQuery] FilterRequest request,
         CancellationToken cancellationToken = default)
     {
-        var result = await _giocoService.GetPagedAsync(request, cancellationToken);
+        Result<PagedResult<GiocoDto>> result = await _giocoService.GetPagedAsync(request, cancellationToken);
         return HandleResult(result);
     }
 
@@ -43,11 +38,11 @@ public class GiochiController : BaseController
     /// <returns>Gioco trovato</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<GiocoDto>> GetByIdAsync(
-        Guid id, 
-        [FromQuery] bool includeDeleted = false, 
+        Guid id,
+        [FromQuery] bool includeDeleted = false,
         CancellationToken cancellationToken = default)
     {
-        var result = await _giocoService.GetByIdAsync(id, includeDeleted, cancellationToken);
+        Result<GiocoDto> result = await _giocoService.GetByIdAsync(id, includeDeleted, cancellationToken);
         return HandleResult(result);
     }
 
@@ -59,7 +54,7 @@ public class GiochiController : BaseController
     /// <returns>Gioco creato</returns>
     [HttpPost]
     public async Task<ActionResult<GiocoDto>> CreateAsync(
-        [FromBody] CreaGiocoDto dto, 
+        [FromBody] CreaGiocoDto dto,
         CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
@@ -67,7 +62,7 @@ public class GiochiController : BaseController
             return BadRequest(ModelState);
         }
 
-        var result = await _giocoService.CreateAsync(dto, cancellationToken);
+        Result<GiocoDto> result = await _giocoService.CreateAsync(dto, cancellationToken);
         return HandleResult(result);
     }
 
@@ -80,8 +75,8 @@ public class GiochiController : BaseController
     /// <returns>Gioco aggiornato</returns>
     [HttpPut("{id}")]
     public async Task<ActionResult<GiocoDto>> UpdateAsync(
-        Guid id, 
-        [FromBody] AggiornaGiocoDto dto, 
+        Guid id,
+        [FromBody] AggiornaGiocoDto dto,
         CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
@@ -94,7 +89,7 @@ public class GiochiController : BaseController
             return BadRequest("L'ID nell'URL non corrisponde all'ID nel corpo della richiesta");
         }
 
-        var result = await _giocoService.UpdateAsync(dto, cancellationToken);
+        Result<GiocoDto> result = await _giocoService.UpdateAsync(dto, cancellationToken);
         return HandleResult(result);
     }
 
@@ -106,10 +101,10 @@ public class GiochiController : BaseController
     /// <returns>Risultato dell'operazione</returns>
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(
-        Guid id, 
+        Guid id,
         CancellationToken cancellationToken = default)
     {
-        var result = await _giocoService.DeleteAsync(id, cancellationToken);
+        Result result = await _giocoService.DeleteAsync(id, cancellationToken);
         return HandleResult(result);
     }
 
@@ -121,10 +116,10 @@ public class GiochiController : BaseController
     /// <returns>True se il gioco esiste</returns>
     [HttpGet("{id}/exists")]
     public async Task<ActionResult<bool>> ExistsAsync(
-        Guid id, 
+        Guid id,
         CancellationToken cancellationToken = default)
     {
-        var result = await _giocoService.ExistsAsync(id, cancellationToken);
+        Result<bool> result = await _giocoService.ExistsAsync(id, cancellationToken);
         return HandleResult(result);
     }
 }

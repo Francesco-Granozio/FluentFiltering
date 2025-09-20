@@ -1,4 +1,4 @@
-namespace GameStore.Domain.DTOs.Common;
+namespace GameStore.Shared.DTOs.Common;
 
 /// <summary>
 /// Risultato paginato per le query

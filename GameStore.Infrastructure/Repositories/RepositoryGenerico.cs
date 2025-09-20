@@ -1,10 +1,6 @@
-using System.Linq.Expressions;
-using GameStore.Domain.DTOs.Common;
-using GameStore.Domain.Interfaces;
 using GameStore.Infrastructure.Common;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
-using GameStore.Domain;
+using System.Linq.Expressions;
 
 namespace GameStore.Infrastructure.Repositories;
 
@@ -25,8 +21,8 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     public virtual async Task<T?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<T> query = _dbSet.AsQueryable();
+
         if (!includeDeleted)
         {
             // Il filtro globale per soft delete è già applicato dal DbContext
@@ -39,8 +35,8 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     public virtual async Task<IEnumerable<T>> GetAllAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<T> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -49,13 +45,13 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         return await query.ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<Domain.DTOs.Common.PagedResult<T>> GetPagedAsync(
-        FilterRequest request, 
-        Expression<Func<T, bool>>? presetFilter = null, 
+    public virtual async Task<Shared.DTOs.Common.PagedResult<T>> GetPagedAsync(
+        FilterRequest request,
+        Expression<Func<T, bool>>? presetFilter = null,
         Func<IQueryable<T>, IQueryable<T>>? includes = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
+        IQueryable<T> query = _dbSet.AsQueryable();
 
         // Applica il filtro per soft delete se necessario
         if (request.IncludeDeleted)
@@ -78,17 +74,17 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         // Applica il filtro dinamico se fornito
         if (!string.IsNullOrWhiteSpace(request.Filter))
         {
-            var validatedFilter = DynamicLinqHelper.ValidateAndSanitizeFilter(request.Filter, typeof(T));
+            string validatedFilter = DynamicLinqHelper.ValidateAndSanitizeFilter(request.Filter, typeof(T));
             query = query.Where(validatedFilter);
         }
 
         // Ottieni il conteggio totale prima della paginazione
-        var totalItems = await query.CountAsync(cancellationToken);
+        int totalItems = await query.CountAsync(cancellationToken);
 
         // Applica l'ordinamento se fornito
         if (!string.IsNullOrWhiteSpace(request.OrderBy))
         {
-            var validatedOrderBy = DynamicLinqHelper.ValidateAndSanitizeOrderBy(request.OrderBy, typeof(T));
+            string validatedOrderBy = DynamicLinqHelper.ValidateAndSanitizeOrderBy(request.OrderBy, typeof(T));
             query = query.OrderBy(validatedOrderBy);
         }
         else
@@ -98,12 +94,12 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
         }
 
         // Applica la paginazione
-        var items = await query
+        List<T> items = await query
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
-        return new GameStore.Domain.DTOs.Common.PagedResult<T>
+        return new GameStore.Shared.DTOs.Common.PagedResult<T>
         {
             Items = items,
             TotalItems = totalItems,
@@ -151,7 +147,7 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     public virtual void RemoveRange(IEnumerable<T> entities)
     {
-        foreach (var entity in entities)
+        foreach (T entity in entities)
         {
             Remove(entity); // Usa il metodo Remove che gestisce il soft delete
         }
@@ -164,8 +160,8 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<T> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -176,8 +172,8 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<T> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -195,10 +191,10 @@ public class RepositoryGenerico<T> : IRepositoryGenerico<T> where T : class
 
     private static Expression<Func<T, bool>> BuildIdExpression(Guid id)
     {
-        var parameter = Expression.Parameter(typeof(T), "x");
-        var property = Expression.Property(parameter, "Id");
-        var constant = Expression.Constant(id);
-        var equality = Expression.Equal(property, constant);
+        ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
+        MemberExpression property = Expression.Property(parameter, "Id");
+        ConstantExpression constant = Expression.Constant(id);
+        BinaryExpression equality = Expression.Equal(property, constant);
         return Expression.Lambda<Func<T, bool>>(equality, parameter);
     }
 

@@ -1,7 +1,5 @@
-using System.Linq.Expressions;
-using GameStore.Domain;
 using GameStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace GameStore.Infrastructure;
 
@@ -32,15 +30,15 @@ public class ApplicationDbContext : DbContext
         // Filtro globale per soft delete
         // Questo filtro viene applicato automaticamente a tutte le query
         // per escludere le entità cancellate logicamente
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        foreach (Microsoft.EntityFrameworkCore.Metadata.IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
             {
                 // Crea un filtro globale che esclude le entità con IsCancellato = true
-                var parameter = Expression.Parameter(entityType.ClrType, "e");
-                var property = Expression.Property(parameter, nameof(ISoftDelete.IsCancellato));
-                var filter = Expression.Lambda(Expression.Equal(property, Expression.Constant(false)), parameter);
-                
+                ParameterExpression parameter = Expression.Parameter(entityType.ClrType, "e");
+                MemberExpression property = Expression.Property(parameter, nameof(ISoftDelete.IsCancellato));
+                LambdaExpression filter = Expression.Lambda(Expression.Equal(property, Expression.Constant(false)), parameter);
+
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
             }
         }
@@ -49,7 +47,7 @@ public class ApplicationDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        
+
         // Configurazioni aggiuntive del DbContext se necessarie
         // (es. logging, timeout, etc.)
     }

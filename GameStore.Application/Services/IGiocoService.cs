@@ -1,7 +1,3 @@
-using GameStore.Application.Common;
-using GameStore.Application.DTOs;
-using GameStore.Domain.DTOs.Common;
-
 namespace GameStore.Application.Services;
 
 /// <summary>

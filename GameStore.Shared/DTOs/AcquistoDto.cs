@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace GameStore.Application.DTOs;
+namespace GameStore.Shared.DTOs;
 
 /// <summary>
 /// DTO per la visualizzazione di un acquisto
@@ -17,7 +15,7 @@ public class AcquistoDto
     public string? CodiceSconto { get; set; }
     public DateTime DataCreazione { get; set; }
     public DateTime? DataUltimaModifica { get; set; }
-    
+
     // Proprietà di navigazione per visualizzazione
     public string? UtenteUsername { get; set; }
     public string? GiocoTitolo { get; set; }

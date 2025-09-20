@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GameStore.Domain\GameStore.Domain.csproj" />
+    <ProjectReference Include="..\GameStore.Shared\GameStore.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

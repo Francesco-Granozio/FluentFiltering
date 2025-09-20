@@ -1,4 +1,4 @@
-namespace GameStore.Application.Common;
+namespace GameStore.Shared.Common;
 
 /// <summary>
 /// Classe base per il Result Pattern
@@ -59,8 +59,8 @@ public class Result<T> : Result
     }
 
     public static Result<T> Success(T value) => new(true, value, Error.Create(ErrorType.Success, "Operazione completata con successo"));
-    public new static Result<T> Failure(Error error) => new(false, default!, error);
-    public new static Result<T> Failure(ErrorType errorType, string message) => new(false, default!, Error.Create(errorType, message));
+    public static new Result<T> Failure(Error error) => new(false, default!, error);
+    public static new Result<T> Failure(ErrorType errorType, string message) => new(false, default!, Error.Create(errorType, message));
 
     public static implicit operator Result<T>(T value) => Success(value);
     public static implicit operator Result<T>(Error error) => Failure(error);

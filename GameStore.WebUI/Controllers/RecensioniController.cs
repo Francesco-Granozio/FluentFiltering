@@ -1,9 +1,3 @@
-using GameStore.Application.DTOs;
-using GameStore.Domain.DTOs.Common;
-using GameStore.Application.Services;
-using GameStore.Application.Common;
-using Microsoft.AspNetCore.Mvc;
-
 namespace GameStore.WebUI.Controllers;
 
 /// <summary>
@@ -24,7 +18,7 @@ public class RecensioniController : BaseController
     [ProducesResponseType(typeof(PagedResult<RecensioneDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<RecensioneDto>>> GetRecensioni([FromQuery] FilterRequest request, CancellationToken cancellationToken)
     {
-        var result = await _recensioneService.GetPagedAsync(request, cancellationToken);
+        Result<PagedResult<RecensioneDto>> result = await _recensioneService.GetPagedAsync(request, cancellationToken);
         return HandleResult(result);
     }
 
@@ -33,7 +27,7 @@ public class RecensioniController : BaseController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RecensioneDto>> GetRecensioneById(Guid id, [FromQuery] bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var result = await _recensioneService.GetByIdAsync(id, includeDeleted, cancellationToken);
+        Result<RecensioneDto> result = await _recensioneService.GetByIdAsync(id, includeDeleted, cancellationToken);
         return HandleResult(result);
     }
 
@@ -41,7 +35,7 @@ public class RecensioniController : BaseController
     [ProducesResponseType(typeof(IEnumerable<RecensioneDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RecensioneDto>>> GetRecensioniByGioco(Guid giocoId, CancellationToken cancellationToken)
     {
-        var result = await _recensioneService.GetByGiocoAsync(giocoId, cancellationToken);
+        Result<IEnumerable<RecensioneDto>> result = await _recensioneService.GetByGiocoAsync(giocoId, cancellationToken);
         return HandleResult(result);
     }
 
@@ -50,7 +44,7 @@ public class RecensioniController : BaseController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RecensioneDto>> CreateRecensione([FromBody] CreaRecensioneDto dto, CancellationToken cancellationToken)
     {
-        var result = await _recensioneService.CreateAsync(dto, cancellationToken);
+        Result<RecensioneDto> result = await _recensioneService.CreateAsync(dto, cancellationToken);
         if (result.IsSuccess)
         {
             return CreatedAtAction(nameof(GetRecensioneById), new { id = result.Value.Id }, result.Value);
@@ -68,7 +62,7 @@ public class RecensioniController : BaseController
         {
             return BadRequest(Error.ValidationFailed("L'ID nella rotta non corrisponde all'ID nel corpo della richiesta."));
         }
-        var result = await _recensioneService.UpdateAsync(dto, cancellationToken);
+        Result<RecensioneDto> result = await _recensioneService.UpdateAsync(dto, cancellationToken);
         return HandleResult(result);
     }
 
@@ -77,7 +71,7 @@ public class RecensioniController : BaseController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteRecensione(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _recensioneService.DeleteAsync(id, cancellationToken);
+        Result result = await _recensioneService.DeleteAsync(id, cancellationToken);
         if (result.IsSuccess)
         {
             return NoContent();

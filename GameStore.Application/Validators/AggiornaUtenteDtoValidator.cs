@@ -1,6 +1,4 @@
 using FluentValidation;
-using GameStore.Application.DTOs;
-using GameStore.Domain.Interfaces;
 
 namespace GameStore.Application.Validators;
 

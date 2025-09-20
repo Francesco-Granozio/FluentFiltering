@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace GameStore.Application.DTOs;
+namespace GameStore.Shared.DTOs;
 
 /// <summary>
 /// DTO per la visualizzazione di un gioco

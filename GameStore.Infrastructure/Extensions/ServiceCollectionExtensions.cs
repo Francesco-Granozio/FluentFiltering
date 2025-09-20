@@ -1,6 +1,4 @@
-using GameStore.Domain.Interfaces;
 using GameStore.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

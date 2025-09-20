@@ -1,6 +1,3 @@
-using GameStore.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore.Storage;
-
 namespace GameStore.Infrastructure.Repositories;
 
 /// <summary>

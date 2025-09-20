@@ -1,5 +1,5 @@
+using GameStore.Shared.DTOs.Common;
 using System.Linq.Expressions;
-using GameStore.Domain.DTOs.Common;
 
 namespace GameStore.Domain.Interfaces;
 
@@ -35,8 +35,8 @@ public interface IRepositoryGenerico<T> where T : class
     /// <param name="cancellationToken">Token di cancellazione</param>
     /// <returns>Risultato paginato</returns>
     Task<PagedResult<T>> GetPagedAsync(
-        FilterRequest request, 
-        Expression<Func<T, bool>>? presetFilter = null, 
+        FilterRequest request,
+        Expression<Func<T, bool>>? presetFilter = null,
         Func<IQueryable<T>, IQueryable<T>>? includes = null,
         CancellationToken cancellationToken = default);
 

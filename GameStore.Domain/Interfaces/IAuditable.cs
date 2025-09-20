@@ -1,4 +1,4 @@
-namespace GameStore.Domain;
+namespace GameStore.Domain.Interfaces;
 
 /// <summary>
 /// Interfaccia per entità che supportano auditing automatico

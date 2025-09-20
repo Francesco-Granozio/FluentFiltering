@@ -1,6 +1,3 @@
-using GameStore.Application.Common;
-using Microsoft.AspNetCore.Mvc;
-
 namespace GameStore.WebUI.Controllers;
 
 /// <summary>

@@ -1,5 +1,4 @@
 using GameStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace GameStore.Infrastructure.Seeding;
@@ -45,9 +44,9 @@ public class DatabaseSeeder : IDataSeeder
             }
 
             // Genera i dati in ordine per rispettare le foreign key
-            var utenti = await GeneraUtenti(cancellationToken);
-            var giochi = await GeneraGiochi(cancellationToken);
-            var acquisti = await GeneraAcquisti(utenti, giochi, cancellationToken);
+            List<Utente> utenti = await GeneraUtenti(cancellationToken);
+            List<Gioco> giochi = await GeneraGiochi(cancellationToken);
+            List<Acquisto> acquisti = await GeneraAcquisti(utenti, giochi, cancellationToken);
             await GeneraRecensioni(utenti, giochi, acquisti, cancellationToken);
 
             _logger.LogInformation($"Seeding completato: {utenti.Count} utenti, {giochi.Count} giochi, {acquisti.Count} acquisti, e recensioni generate.");
@@ -63,13 +62,13 @@ public class DatabaseSeeder : IDataSeeder
     {
         _logger.LogInformation($"Generazione di {NUMERO_UTENTI} utenti...");
 
-        var utenti = new List<Utente>();
-        var usernamesUsati = new HashSet<string>();
-        var emailsUsate = new HashSet<string>();
+        List<Utente> utenti = new();
+        HashSet<string> usernamesUsati = new();
+        HashSet<string> emailsUsate = new();
 
         for (int i = 0; i < NUMERO_UTENTI; i++)
         {
-            var utente = new Utente
+            Utente utente = new()
             {
                 Id = Guid.NewGuid(),
                 Username = GeneraUsernameUnico(usernamesUsati),
@@ -93,11 +92,11 @@ public class DatabaseSeeder : IDataSeeder
     {
         _logger.LogInformation($"Generazione di {NUMERO_GIOCHI} giochi...");
 
-        var giochi = new List<Gioco>();
+        List<Gioco> giochi = new();
 
         for (int i = 0; i < NUMERO_GIOCHI; i++)
         {
-            var gioco = new Gioco
+            Gioco gioco = new()
             {
                 Id = Guid.NewGuid(),
                 Titolo = SeedData.TitoliGiochi[_random.Next(SeedData.TitoliGiochi.Length)],
@@ -123,25 +122,25 @@ public class DatabaseSeeder : IDataSeeder
     {
         _logger.LogInformation($"Generazione di acquisti per {utenti.Count} utenti...");
 
-        var acquisti = new List<Acquisto>();
-        var acquistiPerUtente = new Dictionary<Guid, List<Guid>>(); // Utente -> Lista di giochi acquistati
+        List<Acquisto> acquisti = new();
+        Dictionary<Guid, List<Guid>> acquistiPerUtente = new(); // Utente -> Lista di giochi acquistati
 
-        foreach (var utente in utenti)
+        foreach (Utente utente in utenti)
         {
             acquistiPerUtente[utente.Id] = new List<Guid>();
-            
+
             // Numero casuale di acquisti per utente (tra 1 e 10)
-            var numeroAcquisti = _random.Next(1, 11);
-            
+            int numeroAcquisti = _random.Next(1, 11);
+
             for (int i = 0; i < numeroAcquisti; i++)
             {
-                var gioco = giochi[_random.Next(giochi.Count)];
-                
+                Gioco gioco = giochi[_random.Next(giochi.Count)];
+
                 // Evita acquisti duplicati dello stesso gioco
                 if (acquistiPerUtente[utente.Id].Contains(gioco.Id))
                     continue;
 
-                var acquisto = new Acquisto
+                Acquisto acquisto = new()
                 {
                     Id = Guid.NewGuid(),
                     UtenteId = utente.Id,
@@ -169,28 +168,28 @@ public class DatabaseSeeder : IDataSeeder
     {
         _logger.LogInformation("Generazione di recensioni...");
 
-        var recensioni = new List<Recensione>();
-        var recensioniPerUtenteGioco = new Dictionary<string, bool>(); // "UtenteId-GiocoId" -> bool
+        List<Recensione> recensioni = new();
+        Dictionary<string, bool> recensioniPerUtenteGioco = new(); // "UtenteId-GiocoId" -> bool
 
-        foreach (var utente in utenti)
+        foreach (Utente utente in utenti)
         {
             // Numero casuale di recensioni per utente (tra 0 e 8)
-            var numeroRecensioni = _random.Next(0, 9);
-            
+            int numeroRecensioni = _random.Next(0, 9);
+
             for (int i = 0; i < numeroRecensioni; i++)
             {
-                var gioco = giochi[_random.Next(giochi.Count)];
-                var key = $"{utente.Id}-{gioco.Id}";
-                
+                Gioco gioco = giochi[_random.Next(giochi.Count)];
+                string key = $"{utente.Id}-{gioco.Id}";
+
                 // Evita recensioni multiple dello stesso utente per lo stesso gioco
                 if (recensioniPerUtenteGioco.ContainsKey(key))
                     continue;
 
                 // Verifica se l'utente ha acquistato il gioco
-                var acquistoVerificato = acquisti.FirstOrDefault(a => a.UtenteId == utente.Id && a.GiocoId == gioco.Id);
-                var isVerificata = acquistoVerificato != null;
+                Acquisto? acquistoVerificato = acquisti.FirstOrDefault(a => a.UtenteId == utente.Id && a.GiocoId == gioco.Id);
+                bool isVerificata = acquistoVerificato != null;
 
-                var recensione = new Recensione
+                Recensione recensione = new()
                 {
                     Id = Guid.NewGuid(),
                     UtenteId = utente.Id,
@@ -220,8 +219,8 @@ public class DatabaseSeeder : IDataSeeder
         string username;
         do
         {
-            var nome = SeedData.Nomi[_random.Next(SeedData.Nomi.Length)];
-            var numero = _random.Next(1, 1000);
+            string nome = SeedData.Nomi[_random.Next(SeedData.Nomi.Length)];
+            int numero = _random.Next(1, 1000);
             username = $"{nome.ToLower()}{numero}";
         } while (usernamesUsati.Contains(username));
 
@@ -234,10 +233,10 @@ public class DatabaseSeeder : IDataSeeder
         string email;
         do
         {
-            var nome = SeedData.Nomi[_random.Next(SeedData.Nomi.Length)].ToLower();
-            var cognome = SeedData.Cognomi[_random.Next(SeedData.Cognomi.Length)].ToLower();
-            var dominio = SeedData.DominiEmail[_random.Next(SeedData.DominiEmail.Length)];
-            var numero = _random.Next(1, 1000);
+            string nome = SeedData.Nomi[_random.Next(SeedData.Nomi.Length)].ToLower();
+            string cognome = SeedData.Cognomi[_random.Next(SeedData.Cognomi.Length)].ToLower();
+            string dominio = SeedData.DominiEmail[_random.Next(SeedData.DominiEmail.Length)];
+            int numero = _random.Next(1, 1000);
             email = $"{nome}.{cognome}{numero}@{dominio}";
         } while (emailsUsate.Contains(email));
 
@@ -247,41 +246,41 @@ public class DatabaseSeeder : IDataSeeder
 
     private DateTime GeneraDataRegistrazione()
     {
-        var giorniPassati = _random.Next(1, 365 * 3); // Ultimi 3 anni
+        int giorniPassati = _random.Next(1, 365 * 3); // Ultimi 3 anni
         return DateTime.UtcNow.AddDays(-giorniPassati);
     }
 
     private DateTime GeneraDataRilascio()
     {
-        var giorniPassati = _random.Next(1, 365 * 5); // Ultimi 5 anni
+        int giorniPassati = _random.Next(1, 365 * 5); // Ultimi 5 anni
         return DateTime.UtcNow.AddDays(-giorniPassati);
     }
 
     private DateTime GeneraDataAcquisto(DateTime dataRegistrazione)
     {
-        var giorniDopoRegistrazione = _random.Next(1, (int)(DateTime.UtcNow - dataRegistrazione).TotalDays);
+        int giorniDopoRegistrazione = _random.Next(1, (int)(DateTime.UtcNow - dataRegistrazione).TotalDays);
         return dataRegistrazione.AddDays(giorniDopoRegistrazione);
     }
 
     private DateTime GeneraDataRecensione(DateTime dataRegistrazione)
     {
-        var giorniTotali = (int)(DateTime.UtcNow - dataRegistrazione).TotalDays;
-        
+        int giorniTotali = (int)(DateTime.UtcNow - dataRegistrazione).TotalDays;
+
         // Se l'utente si è registrato meno di 7 giorni fa, genera la recensione tra 1 e i giorni totali
         if (giorniTotali < 7)
         {
-            var giorniDopoRegistrazione = giorniTotali > 1 ? _random.Next(1, giorniTotali + 1) : 1;
+            int giorniDopoRegistrazione = giorniTotali > 1 ? _random.Next(1, giorniTotali + 1) : 1;
             return dataRegistrazione.AddDays(giorniDopoRegistrazione);
         }
-        
+
         // Se l'utente si è registrato più di 7 giorni fa, genera la recensione tra 7 e i giorni totali
-        var giorniDopoRegistrazioneNormale = _random.Next(7, giorniTotali + 1);
+        int giorniDopoRegistrazioneNormale = _random.Next(7, giorniTotali + 1);
         return dataRegistrazione.AddDays(giorniDopoRegistrazioneNormale);
     }
 
     private decimal GeneraPrezzo()
     {
-        var prezzi = new[] { 9.99m, 19.99m, 29.99m, 39.99m, 49.99m, 59.99m, 69.99m, 79.99m };
+        decimal[] prezzi = new[] { 9.99m, 19.99m, 29.99m, 39.99m, 49.99m, 59.99m, 69.99m, 79.99m };
         return prezzi[_random.Next(prezzi.Length)];
     }
 
@@ -292,7 +291,7 @@ public class DatabaseSeeder : IDataSeeder
             return prezzoListino;
 
         // Sconto tra 10% e 50%
-        var scontoPercentuale = _random.Next(10, 51);
+        int scontoPercentuale = _random.Next(10, 51);
         return prezzoListino * (100 - scontoPercentuale) / 100;
     }
 

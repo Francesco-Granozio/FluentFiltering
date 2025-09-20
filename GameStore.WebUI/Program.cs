@@ -1,25 +1,17 @@
 using FluentValidation;
-using GameStore.Domain.Interfaces;
 using GameStore.Application.Mapping;
-using GameStore.Application.Services;
 using GameStore.Infrastructure;
 using GameStore.Infrastructure.Extensions;
 using GameStore.Infrastructure.Interceptors;
-using GameStore.Infrastructure.Repositories;
 using GameStore.Infrastructure.Seeding;
-using GameStore.WebUI.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using Radzen;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 
 // Add Radzen.Blazor services
 builder.Services.AddRadzenComponents();
@@ -29,7 +21,7 @@ builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<AuditableEntitySaveChangesInterceptor>();
 builder.Services.AddDbContext<ApplicationDbContext>((provider, options) =>
 {
-    var interceptor = provider.GetRequiredService<AuditableEntitySaveChangesInterceptor>();
+    AuditableEntitySaveChangesInterceptor interceptor = provider.GetRequiredService<AuditableEntitySaveChangesInterceptor>();
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .AddInterceptors(interceptor);
 });
@@ -63,7 +55,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "GameStore API", Version = "v1" });
 });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -90,9 +82,9 @@ app.MapFallbackToPage("/_Host");
 // Esegui il seeding del database se in ambiente di sviluppo
 if (app.Environment.IsDevelopment())
 {
-    using var scope = app.Services.CreateScope();
-    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
-    
+    using IServiceScope scope = app.Services.CreateScope();
+    IDataSeeder seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
+
     try
     {
         await seeder.SeedAsync();

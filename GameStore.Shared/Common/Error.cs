@@ -1,4 +1,4 @@
-namespace GameStore.Application.Common;
+namespace GameStore.Shared.Common;
 
 /// <summary>
 /// Enumerato per i tipi di errore dell'applicazione
@@ -29,19 +29,19 @@ public record Error(ErrorType Type, string Message)
 {
     public static Error Create(ErrorType type, string message) => new(type, message);
 
-    public static Error NotFound(string entityName) => 
+    public static Error NotFound(string entityName) =>
         new(ErrorType.NotFound, $"{entityName} non trovato");
 
-    public static Error ValidationFailed(string message) => 
+    public static Error ValidationFailed(string message) =>
         new(ErrorType.ValidationFailed, message);
 
-    public static Error DatabaseError(string message) => 
+    public static Error DatabaseError(string message) =>
         new(ErrorType.DatabaseError, message);
 
-    public static Error UnexpectedError(string message) => 
+    public static Error UnexpectedError(string message) =>
         new(ErrorType.UnexpectedError, message);
 
-    public static Error Unauthorized() => 
+    public static Error Unauthorized() =>
         new(ErrorType.Unauthorized, "Non autorizzato");
 }
 

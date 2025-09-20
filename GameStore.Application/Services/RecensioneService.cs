@@ -1,11 +1,6 @@
-using AutoMapper;
-using GameStore.Application.Common;
-using GameStore.Application.DTOs;
-using GameStore.Domain.DTOs.Common;
-using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace GameStore.Application.Services;
 
@@ -27,7 +22,7 @@ public class RecensioneService : IRecensioneService
 
     public async Task<Result<RecensioneDto>> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var recensione = await _unitOfWork.Recensioni.GetByIdAsync(id, includeDeleted, cancellationToken);
+        Recensione? recensione = await _unitOfWork.Recensioni.GetByIdAsync(id, includeDeleted, cancellationToken);
         if (recensione == null)
         {
             _logger.LogWarning("Recensione con ID {RecensioneId} non trovata.", id);
@@ -39,14 +34,14 @@ public class RecensioneService : IRecensioneService
     public async Task<Result<PagedResult<RecensioneDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
     {
         // Converte i nomi delle proprietà del DTO in nomi delle proprietà dell'entità
-        var modifiedRequest = ConvertDtoFilterToEntityFilter(request);
-        
-        var pagedResult = await _unitOfWork.Recensioni.GetPagedAsync(modifiedRequest, 
+        FilterRequest modifiedRequest = ConvertDtoFilterToEntityFilter(request);
+
+        PagedResult<Recensione> pagedResult = await _unitOfWork.Recensioni.GetPagedAsync(modifiedRequest,
             presetFilter: r => !r.IsCancellato,
             includes: q => q.Include(r => r.Utente).Include(r => r.Gioco),
             cancellationToken: cancellationToken);
-        
-        var dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(pagedResult.Items);
+
+        IEnumerable<RecensioneDto> dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(pagedResult.Items);
 
         return new PagedResult<RecensioneDto>
         {
@@ -67,7 +62,7 @@ public class RecensioneService : IRecensioneService
             return request;
 
         // Sostituisce i nomi delle proprietà del DTO con i nomi delle proprietà dell'entità
-        var entityFilter = request.Filter
+        string entityFilter = request.Filter
             .Replace("UtenteUsername", "Utente.Username")
             .Replace("GiocoTitolo", "Gioco.Titolo");
 
@@ -83,21 +78,21 @@ public class RecensioneService : IRecensioneService
     public async Task<Result<RecensioneDto>> CreateAsync(CreaRecensioneDto dto, CancellationToken cancellationToken = default)
     {
         // Verifica che l'utente esista
-        var utente = await _unitOfWork.Utenti.GetByIdAsync(dto.UtenteId, false, cancellationToken);
+        Utente? utente = await _unitOfWork.Utenti.GetByIdAsync(dto.UtenteId, false, cancellationToken);
         if (utente == null)
         {
             return Result<RecensioneDto>.Failure(Errors.Recensioni.UserNotFound);
         }
 
         // Verifica che il gioco esista
-        var gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.GiocoId, false, cancellationToken);
+        Gioco? gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.GiocoId, false, cancellationToken);
         if (gioco == null)
         {
             return Result<RecensioneDto>.Failure(Errors.Recensioni.GameNotFound);
         }
 
         // Verifica che non esista già una recensione per questo utente e gioco
-        var existingRecensione = await _unitOfWork.Recensioni.GetByUtenteEGiocoAsync(dto.UtenteId, dto.GiocoId, false, cancellationToken);
+        Recensione? existingRecensione = await _unitOfWork.Recensioni.GetByUtenteEGiocoAsync(dto.UtenteId, dto.GiocoId, false, cancellationToken);
         if (existingRecensione != null)
         {
             return Result<RecensioneDto>.Failure(Errors.Recensioni.DuplicateReview);
@@ -106,25 +101,25 @@ public class RecensioneService : IRecensioneService
         // Verifica che l'acquisto esista se fornito
         if (dto.AcquistoId.HasValue)
         {
-            var acquisto = await _unitOfWork.Acquisti.GetByIdAsync(dto.AcquistoId.Value, false, cancellationToken);
+            Acquisto? acquisto = await _unitOfWork.Acquisti.GetByIdAsync(dto.AcquistoId.Value, false, cancellationToken);
             if (acquisto == null)
             {
                 return Result<RecensioneDto>.Failure(Errors.Recensioni.InvalidPurchase);
             }
         }
 
-        var recensione = _mapper.Map<Recensione>(dto);
+        Recensione recensione = _mapper.Map<Recensione>(dto);
         await _unitOfWork.Recensioni.AddAsync(recensione, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
-        _logger.LogInformation("Recensione creata con ID {RecensioneId} per utente {UtenteId} e gioco {GiocoId}.", 
+        _logger.LogInformation("Recensione creata con ID {RecensioneId} per utente {UtenteId} e gioco {GiocoId}.",
             recensione.Id, recensione.UtenteId, recensione.GiocoId);
         return _mapper.Map<RecensioneDto>(recensione);
     }
 
     public async Task<Result<RecensioneDto>> UpdateAsync(AggiornaRecensioneDto dto, CancellationToken cancellationToken = default)
     {
-        var recensione = await _unitOfWork.Recensioni.GetByIdAsync(dto.Id, false, cancellationToken);
+        Recensione? recensione = await _unitOfWork.Recensioni.GetByIdAsync(dto.Id, false, cancellationToken);
         if (recensione == null)
         {
             _logger.LogWarning("Aggiornamento fallito: Recensione con ID {RecensioneId} non trovata.", dto.Id);
@@ -134,7 +129,7 @@ public class RecensioneService : IRecensioneService
         // Verifica che l'utente esista se è stato cambiato
         if (recensione.UtenteId != dto.UtenteId)
         {
-            var utente = await _unitOfWork.Utenti.GetByIdAsync(dto.UtenteId, false, cancellationToken);
+            Utente? utente = await _unitOfWork.Utenti.GetByIdAsync(dto.UtenteId, false, cancellationToken);
             if (utente == null)
             {
                 return Result<RecensioneDto>.Failure(Errors.Recensioni.UserNotFound);
@@ -144,7 +139,7 @@ public class RecensioneService : IRecensioneService
         // Verifica che il gioco esista se è stato cambiato
         if (recensione.GiocoId != dto.GiocoId)
         {
-            var gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.GiocoId, false, cancellationToken);
+            Gioco? gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.GiocoId, false, cancellationToken);
             if (gioco == null)
             {
                 return Result<RecensioneDto>.Failure(Errors.Recensioni.GameNotFound);
@@ -154,7 +149,7 @@ public class RecensioneService : IRecensioneService
         // Verifica che l'acquisto esista se fornito e cambiato
         if (dto.AcquistoId.HasValue && recensione.AcquistoId != dto.AcquistoId)
         {
-            var acquisto = await _unitOfWork.Acquisti.GetByIdAsync(dto.AcquistoId.Value, false, cancellationToken);
+            Acquisto? acquisto = await _unitOfWork.Acquisti.GetByIdAsync(dto.AcquistoId.Value, false, cancellationToken);
             if (acquisto == null)
             {
                 return Result<RecensioneDto>.Failure(Errors.Recensioni.InvalidPurchase);
@@ -171,7 +166,7 @@ public class RecensioneService : IRecensioneService
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var recensione = await _unitOfWork.Recensioni.GetByIdAsync(id, false, cancellationToken);
+        Recensione? recensione = await _unitOfWork.Recensioni.GetByIdAsync(id, false, cancellationToken);
         if (recensione == null)
         {
             _logger.LogWarning("Cancellazione fallita: Recensione con ID {RecensioneId} non trovata.", id);
@@ -187,14 +182,14 @@ public class RecensioneService : IRecensioneService
 
     public async Task<Result<bool>> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var exists = await _unitOfWork.Recensioni.ExistsAsync(r => r.Id == id, false, cancellationToken);
+        bool exists = await _unitOfWork.Recensioni.ExistsAsync(r => r.Id == id, false, cancellationToken);
         return exists;
     }
 
     public async Task<Result<IEnumerable<RecensioneDto>>> GetByGiocoAsync(Guid giocoId, CancellationToken cancellationToken = default)
     {
-        var recensioni = await _unitOfWork.Recensioni.GetByGiocoIdAsync(giocoId, false, cancellationToken);
-        var dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(recensioni);
+        IEnumerable<Recensione> recensioni = await _unitOfWork.Recensioni.GetByGiocoIdAsync(giocoId, false, cancellationToken);
+        IEnumerable<RecensioneDto> dtoList = _mapper.Map<IEnumerable<RecensioneDto>>(recensioni);
         return Result<IEnumerable<RecensioneDto>>.Success(dtoList);
     }
 }

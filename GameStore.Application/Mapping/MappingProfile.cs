@@ -1,5 +1,3 @@
-using AutoMapper;
-using GameStore.Application.DTOs;
 using GameStore.Domain.Entities;
 
 namespace GameStore.Application.Mapping;
@@ -21,7 +19,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DataCancellazione, opt => opt.Ignore())
             .ForMember(dest => dest.Acquisti, opt => opt.Ignore())
             .ForMember(dest => dest.Recensioni, opt => opt.Ignore());
-        
+
         CreateMap<AggiornaUtenteDto, Utente>()
             .ForMember(dest => dest.DataCreazione, opt => opt.Ignore())
             .ForMember(dest => dest.DataUltimaModifica, opt => opt.Ignore())
@@ -41,7 +39,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DataCancellazione, opt => opt.Ignore())
             .ForMember(dest => dest.Acquisti, opt => opt.Ignore())
             .ForMember(dest => dest.Recensioni, opt => opt.Ignore());
-        
+
         CreateMap<AggiornaGiocoDto, Gioco>()
             .ForMember(dest => dest.DataCreazione, opt => opt.Ignore())
             .ForMember(dest => dest.DataUltimaModifica, opt => opt.Ignore())
@@ -54,7 +52,7 @@ public class MappingProfile : Profile
         CreateMap<Acquisto, AcquistoDto>()
             .ForMember(dest => dest.UtenteUsername, opt => opt.MapFrom(src => src.Utente.Username))
             .ForMember(dest => dest.GiocoTitolo, opt => opt.MapFrom(src => src.Gioco.Titolo));
-        
+
         CreateMap<CreaAcquistoDto, Acquisto>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.DataCreazione, opt => opt.Ignore())
@@ -64,7 +62,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Utente, opt => opt.Ignore())
             .ForMember(dest => dest.Gioco, opt => opt.Ignore())
             .ForMember(dest => dest.Recensioni, opt => opt.Ignore());
-        
+
         CreateMap<AggiornaAcquistoDto, Acquisto>()
             .ForMember(dest => dest.DataCreazione, opt => opt.Ignore())
             .ForMember(dest => dest.DataUltimaModifica, opt => opt.Ignore())
@@ -78,7 +76,7 @@ public class MappingProfile : Profile
         CreateMap<Recensione, RecensioneDto>()
             .ForMember(dest => dest.UtenteUsername, opt => opt.MapFrom(src => src.Utente.Username))
             .ForMember(dest => dest.GiocoTitolo, opt => opt.MapFrom(src => src.Gioco.Titolo));
-        
+
         CreateMap<CreaRecensioneDto, Recensione>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.DataCreazione, opt => opt.Ignore())
@@ -88,7 +86,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Utente, opt => opt.Ignore())
             .ForMember(dest => dest.Gioco, opt => opt.Ignore())
             .ForMember(dest => dest.Acquisto, opt => opt.Ignore());
-        
+
         CreateMap<AggiornaRecensioneDto, Recensione>()
             .ForMember(dest => dest.DataCreazione, opt => opt.Ignore())
             .ForMember(dest => dest.DataUltimaModifica, opt => opt.Ignore())

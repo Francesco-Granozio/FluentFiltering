@@ -1,5 +1,5 @@
-using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace GameStore.Infrastructure.Common;
 
@@ -20,11 +20,11 @@ public static class DynamicLinqHelper
             return string.Empty;
 
         // Rimuovi caratteri pericolosi
-        var sanitizedFilter = Regex.Replace(filter, @"[;{}]", "");
-        
+        string sanitizedFilter = Regex.Replace(filter, @"[;{}]", "");
+
         // Converti le date dal formato italiano (dd/MM/yyyy) al formato standard (yyyy-MM-dd)
         sanitizedFilter = ConvertItalianDatesToStandard(sanitizedFilter);
-        
+
         return sanitizedFilter;
     }
 
@@ -37,29 +37,29 @@ public static class DynamicLinqHelper
     {
         // Pattern per riconoscere confronti di uguaglianza con date italiane
         // Es: DataRegistrazione == "15/09/2025 00:00:00"
-        var dateEqualityPattern = @"(\w+)\s*==\s*(['""])(\d{1,2}/\d{1,2}/\d{4})(?:\s+\d{1,2}:\d{2}:\d{2})?\2";
-        
+        string dateEqualityPattern = @"(\w+)\s*==\s*(['""])(\d{1,2}/\d{1,2}/\d{4})(?:\s+\d{1,2}:\d{2}:\d{2})?\2";
+
         return Regex.Replace(filter, dateEqualityPattern, match =>
         {
-            var fieldName = match.Groups[1].Value; // Nome del campo (es: DataRegistrazione)
-            var quote = match.Groups[2].Value; // Virgolette usate
-            var italianDateStr = match.Groups[3].Value; // Solo la parte data (dd/MM/yyyy)
-            
+            string fieldName = match.Groups[1].Value; // Nome del campo (es: DataRegistrazione)
+            string quote = match.Groups[2].Value; // Virgolette usate
+            string italianDateStr = match.Groups[3].Value; // Solo la parte data (dd/MM/yyyy)
+
             // Prova a parsare la data in formato italiano
-            if (DateTime.TryParseExact(italianDateStr, 
-                "dd/MM/yyyy", 
-                CultureInfo.InvariantCulture, 
-                DateTimeStyles.None, 
+            if (DateTime.TryParseExact(italianDateStr,
+                "dd/MM/yyyy",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
                 out DateTime date))
             {
                 // Converte in un range che copre tutto il giorno
-                var startOfDay = date.Date;
-                var endOfDay = date.Date.AddDays(1);
-                
+                DateTime startOfDay = date.Date;
+                DateTime endOfDay = date.Date.AddDays(1);
+
                 // Sostituisce con un range: field >= startOfDay AND field < endOfDay
                 return $"({fieldName} >= {quote}{startOfDay:yyyy-MM-dd}T00:00:00.0000000{quote} AND {fieldName} < {quote}{endOfDay:yyyy-MM-dd}T00:00:00.0000000{quote})";
             }
-            
+
             // Se non riesce a parsare, lascia il valore originale
             return match.Value;
         });
@@ -77,30 +77,30 @@ public static class DynamicLinqHelper
             return string.Empty;
 
         // Ottieni la whitelist per il tipo di entità
-        var whitelist = GetWhitelistForType(entityType);
+        HashSet<string> whitelist = GetWhitelistForType(entityType);
 
         // Rimuovi caratteri pericolosi, mantieni solo campi, virgole e asc/desc
-        var sanitizedOrderBy = Regex.Replace(orderBy, @"[^\w\s,]", "");
+        string sanitizedOrderBy = Regex.Replace(orderBy, @"[^\w\s,]", "");
 
         // Valida ogni campo nell'ordinamento
-        var orderByParts = sanitizedOrderBy.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        var validatedParts = new List<string>();
+        string[] orderByParts = sanitizedOrderBy.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        List<string> validatedParts = new();
 
-        foreach (var part in orderByParts)
+        foreach (string part in orderByParts)
         {
-            var trimmedPart = part.Trim();
-            var parts = trimmedPart.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            
+            string trimmedPart = part.Trim();
+            string[] parts = trimmedPart.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
             if (parts.Length == 0) continue;
 
-            var fieldName = parts[0];
+            string fieldName = parts[0];
             if (!whitelist.Contains(fieldName, StringComparer.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Campo non consentito nell'ordinamento: {fieldName}");
             }
 
             // Aggiungi direzione se specificata
-            var direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? " desc" : " asc";
+            string direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? " desc" : " asc";
             validatedParts.Add(fieldName + direction);
         }
 

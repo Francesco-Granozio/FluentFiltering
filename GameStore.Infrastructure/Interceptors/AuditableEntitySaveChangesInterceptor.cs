@@ -1,7 +1,3 @@
-using GameStore.Domain;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-
 namespace GameStore.Infrastructure.Interceptors;
 
 /// <summary>
@@ -28,9 +24,9 @@ public class AuditableEntitySaveChangesInterceptor : SaveChangesInterceptor
     {
         if (context == null) return;
 
-        var utcNow = DateTime.UtcNow;
+        DateTime utcNow = DateTime.UtcNow;
 
-        foreach (var entry in context.ChangeTracker.Entries())
+        foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry in context.ChangeTracker.Entries())
         {
             switch (entry.State)
             {
@@ -71,7 +67,7 @@ public class AuditableEntitySaveChangesInterceptor : SaveChangesInterceptor
         {
             // Assicurati che DataCreazione non venga mai modificata
             entry.Property(nameof(IAuditable.DataCreazione)).IsModified = false;
-            
+
             // Aggiorna DataUltimaModifica
             auditableEntity.DataUltimaModifica = utcNow;
         }

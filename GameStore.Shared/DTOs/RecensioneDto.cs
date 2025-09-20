@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace GameStore.Application.DTOs;
+namespace GameStore.Shared.DTOs;
 
 /// <summary>
 /// DTO per la visualizzazione di una recensione
@@ -18,7 +16,7 @@ public class RecensioneDto
     public Guid? AcquistoId { get; set; }
     public DateTime DataCreazione { get; set; }
     public DateTime? DataUltimaModifica { get; set; }
-    
+
     // Proprietà di navigazione per visualizzazione
     public string? UtenteUsername { get; set; }
     public string? GiocoTitolo { get; set; }

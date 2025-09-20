@@ -1,4 +1,4 @@
-namespace GameStore.Domain;
+namespace GameStore.Domain.Interfaces;
 
 /// <summary>
 /// Interfaccia base per tutte le entità del dominio con identificatore tipizzato

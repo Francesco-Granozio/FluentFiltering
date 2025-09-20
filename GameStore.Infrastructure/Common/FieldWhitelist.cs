@@ -10,7 +10,7 @@ public static class FieldWhitelist
     /// </summary>
     public static readonly HashSet<string> UtenteFields = new()
     {
-        "Id", "Username", "Email", "NomeCompleto", "Paese", "DataRegistrazione", 
+        "Id", "Username", "Email", "NomeCompleto", "Paese", "DataRegistrazione",
         "DataCreazione", "DataUltimaModifica", "IsCancellato", "DataCancellazione"
     };
 
@@ -19,8 +19,8 @@ public static class FieldWhitelist
     /// </summary>
     public static readonly HashSet<string> GiocoFields = new()
     {
-        "Id", "Titolo", "Descrizione", "PrezzoListino", "DataRilascio", "Genere", 
-        "Piattaforma", "Sviluppatore", "DataCreazione", "DataUltimaModifica", 
+        "Id", "Titolo", "Descrizione", "PrezzoListino", "DataRilascio", "Genere",
+        "Piattaforma", "Sviluppatore", "DataCreazione", "DataUltimaModifica",
         "IsCancellato", "DataCancellazione"
     };
 
@@ -29,8 +29,8 @@ public static class FieldWhitelist
     /// </summary>
     public static readonly HashSet<string> AcquistoFields = new()
     {
-        "Id", "UtenteId", "GiocoId", "DataAcquisto", "PrezzoPagato", "Quantita", 
-        "MetodoPagamento", "CodiceSconto", "DataCreazione", "DataUltimaModifica", 
+        "Id", "UtenteId", "GiocoId", "DataAcquisto", "PrezzoPagato", "Quantita",
+        "MetodoPagamento", "CodiceSconto", "DataCreazione", "DataUltimaModifica",
         "IsCancellato", "DataCancellazione"
     };
 
@@ -39,8 +39,8 @@ public static class FieldWhitelist
     /// </summary>
     public static readonly HashSet<string> RecensioneFields = new()
     {
-        "Id", "UtenteId", "GiocoId", "Punteggio", "Titolo", "Corpo", "DataRecensione", 
-        "IsRecensioneVerificata", "AcquistoId", "DataCreazione", "DataUltimaModifica", 
+        "Id", "UtenteId", "GiocoId", "Punteggio", "Titolo", "Corpo", "DataRecensione",
+        "IsRecensioneVerificata", "AcquistoId", "DataCreazione", "DataUltimaModifica",
         "IsCancellato", "DataCancellazione"
     };
 
@@ -51,7 +51,7 @@ public static class FieldWhitelist
     /// <returns>HashSet con i campi consentiti</returns>
     public static HashSet<string> GetWhitelistFor<T>()
     {
-        var typeName = typeof(T).Name;
+        string typeName = typeof(T).Name;
         return typeName switch
         {
             nameof(Domain.Entities.Utente) => UtenteFields,
@@ -70,7 +70,7 @@ public static class FieldWhitelist
     /// <returns>True se il campo è consentito</returns>
     public static bool IsFieldAllowed<T>(string fieldName)
     {
-        var whitelist = GetWhitelistFor<T>();
+        HashSet<string> whitelist = GetWhitelistFor<T>();
         return whitelist.Contains(fieldName, StringComparer.OrdinalIgnoreCase);
     }
 }

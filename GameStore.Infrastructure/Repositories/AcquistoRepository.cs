@@ -1,6 +1,4 @@
-using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Infrastructure.Repositories;
 
@@ -15,8 +13,8 @@ public class AcquistoRepository : RepositoryGenerico<Acquisto>, IAcquistoReposit
 
     public async Task<IEnumerable<Acquisto>> GetByUtenteIdAsync(Guid utenteId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Acquisto> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -31,8 +29,8 @@ public class AcquistoRepository : RepositoryGenerico<Acquisto>, IAcquistoReposit
 
     public async Task<IEnumerable<Acquisto>> GetByGiocoIdAsync(Guid giocoId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Acquisto> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -53,8 +51,8 @@ public class AcquistoRepository : RepositoryGenerico<Acquisto>, IAcquistoReposit
 
     public async Task<IEnumerable<Acquisto>> GetByPeriodoAsync(DateTime dataInizio, DateTime dataFine, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Acquisto> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();

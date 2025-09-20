@@ -1,6 +1,4 @@
-using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Infrastructure.Repositories;
 
@@ -21,9 +19,9 @@ public class GiocoRepository : RepositoryGenerico<Gioco>, IGiocoRepository
             .Select(g => new { GiocoId = g.Key, SalesCount = g.Sum(a => a.Quantita) })
             .OrderByDescending(x => x.SalesCount)
             .Take(count)
-            .Join(_context.Giochi, 
-                  x => x.GiocoId, 
-                  g => g.Id, 
+            .Join(_context.Giochi,
+                  x => x.GiocoId,
+                  g => g.Id,
                   (x, g) => g)
             .ToListAsync(cancellationToken);
     }

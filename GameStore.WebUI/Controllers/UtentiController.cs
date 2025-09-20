@@ -1,8 +1,3 @@
-using GameStore.Application.DTOs;
-using GameStore.Domain.DTOs.Common;
-using GameStore.Application.Services;
-using GameStore.WebUI.Controllers;
-using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 
 namespace GameStore.WebUI.Controllers;
@@ -36,10 +31,10 @@ public class UtentiController : BaseController
     /// <returns>Lista paginata di utenti</returns>
     [HttpGet]
     public async Task<ActionResult<PagedResult<UtenteDto>>> GetPagedAsync(
-        [FromQuery] FilterRequest request, 
+        [FromQuery] FilterRequest request,
         CancellationToken cancellationToken = default)
     {
-        var result = await _utenteService.GetPagedAsync(request, cancellationToken);
+        Result<PagedResult<UtenteDto>> result = await _utenteService.GetPagedAsync(request, cancellationToken);
         return HandleResult(result);
     }
 
@@ -52,11 +47,11 @@ public class UtentiController : BaseController
     /// <returns>Utente trovato</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<UtenteDto>> GetByIdAsync(
-        Guid id, 
-        [FromQuery] bool includeDeleted = false, 
+        Guid id,
+        [FromQuery] bool includeDeleted = false,
         CancellationToken cancellationToken = default)
     {
-        var result = await _utenteService.GetByIdAsync(id, includeDeleted, cancellationToken);
+        Result<UtenteDto> result = await _utenteService.GetByIdAsync(id, includeDeleted, cancellationToken);
         return HandleResult(result);
     }
 
@@ -68,21 +63,21 @@ public class UtentiController : BaseController
     /// <returns>Utente creato</returns>
     [HttpPost]
     public async Task<ActionResult<UtenteDto>> CreateAsync(
-        [FromBody] CreaUtenteDto dto, 
+        [FromBody] CreaUtenteDto dto,
         CancellationToken cancellationToken = default)
     {
         // Validazione con FluentValidation
-        var validationResult = await _createValidator.ValidateAsync(dto, cancellationToken);
+        FluentValidation.Results.ValidationResult validationResult = await _createValidator.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
         {
-            foreach (var error in validationResult.Errors)
+            foreach (FluentValidation.Results.ValidationFailure? error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
             return BadRequest(ModelState);
         }
 
-        var result = await _utenteService.CreateAsync(dto, cancellationToken);
+        Result<UtenteDto> result = await _utenteService.CreateAsync(dto, cancellationToken);
         return HandleResult(result);
     }
 
@@ -95,15 +90,15 @@ public class UtentiController : BaseController
     /// <returns>Utente aggiornato</returns>
     [HttpPut("{id}")]
     public async Task<ActionResult<UtenteDto>> UpdateAsync(
-        Guid id, 
-        [FromBody] AggiornaUtenteDto dto, 
+        Guid id,
+        [FromBody] AggiornaUtenteDto dto,
         CancellationToken cancellationToken = default)
     {
         // Validazione con FluentValidation
-        var validationResult = await _updateValidator.ValidateAsync(dto, cancellationToken);
+        FluentValidation.Results.ValidationResult validationResult = await _updateValidator.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
         {
-            foreach (var error in validationResult.Errors)
+            foreach (FluentValidation.Results.ValidationFailure? error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
@@ -115,7 +110,7 @@ public class UtentiController : BaseController
             return BadRequest("L'ID nell'URL non corrisponde all'ID nel corpo della richiesta");
         }
 
-        var result = await _utenteService.UpdateAsync(dto, cancellationToken);
+        Result<UtenteDto> result = await _utenteService.UpdateAsync(dto, cancellationToken);
         return HandleResult(result);
     }
 
@@ -127,10 +122,10 @@ public class UtentiController : BaseController
     /// <returns>Risultato dell'operazione</returns>
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(
-        Guid id, 
+        Guid id,
         CancellationToken cancellationToken = default)
     {
-        var result = await _utenteService.DeleteAsync(id, cancellationToken);
+        Result result = await _utenteService.DeleteAsync(id, cancellationToken);
         return HandleResult(result);
     }
 
@@ -142,10 +137,10 @@ public class UtentiController : BaseController
     /// <returns>True se l'utente esiste</returns>
     [HttpGet("{id}/exists")]
     public async Task<ActionResult<bool>> ExistsAsync(
-        Guid id, 
+        Guid id,
         CancellationToken cancellationToken = default)
     {
-        var result = await _utenteService.ExistsAsync(id, cancellationToken);
+        Result<bool> result = await _utenteService.ExistsAsync(id, cancellationToken);
         return HandleResult(result);
     }
 }

@@ -1,6 +1,4 @@
-using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Infrastructure.Repositories;
 
@@ -15,8 +13,8 @@ public class UtenteRepository : RepositoryGenerico<Utente>, IUtenteRepository
 
     public async Task<Utente?> GetByUsernameAsync(string username, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Utente> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -27,8 +25,8 @@ public class UtenteRepository : RepositoryGenerico<Utente>, IUtenteRepository
 
     public async Task<Utente?> GetByEmailAsync(string email, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Utente> query = _dbSet.AsQueryable();
+
         if (includeDeleted)
         {
             query = query.IgnoreQueryFilters();
@@ -39,8 +37,8 @@ public class UtenteRepository : RepositoryGenerico<Utente>, IUtenteRepository
 
     public async Task<bool> UsernameExistsAsync(string username, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Utente> query = _dbSet.AsQueryable();
+
         if (excludeId.HasValue)
         {
             query = query.Where(u => u.Id != excludeId.Value);
@@ -51,8 +49,8 @@ public class UtenteRepository : RepositoryGenerico<Utente>, IUtenteRepository
 
     public async Task<bool> EmailExistsAsync(string email, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
+        IQueryable<Utente> query = _dbSet.AsQueryable();
+
         if (excludeId.HasValue)
         {
             query = query.Where(u => u.Id != excludeId.Value);

@@ -1,8 +1,3 @@
-using AutoMapper;
-using GameStore.Application.Common;
-using GameStore.Application.DTOs;
-using GameStore.Domain.DTOs.Common;
-using GameStore.Domain.Interfaces;
 using GameStore.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -26,7 +21,7 @@ public class GiocoService : IGiocoService
 
     public async Task<Result<GiocoDto>> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var gioco = await _unitOfWork.Giochi.GetByIdAsync(id, includeDeleted, cancellationToken);
+        Gioco? gioco = await _unitOfWork.Giochi.GetByIdAsync(id, includeDeleted, cancellationToken);
         if (gioco == null)
         {
             _logger.LogWarning("Gioco con ID {GiocoId} non trovato.", id);
@@ -37,8 +32,8 @@ public class GiocoService : IGiocoService
 
     public async Task<Result<PagedResult<GiocoDto>>> GetPagedAsync(FilterRequest request, CancellationToken cancellationToken = default)
     {
-        var pagedResult = await _unitOfWork.Giochi.GetPagedAsync(request, cancellationToken: cancellationToken);
-        var dtoList = _mapper.Map<IEnumerable<GiocoDto>>(pagedResult.Items);
+        PagedResult<Gioco> pagedResult = await _unitOfWork.Giochi.GetPagedAsync(request, cancellationToken: cancellationToken);
+        IEnumerable<GiocoDto> dtoList = _mapper.Map<IEnumerable<GiocoDto>>(pagedResult.Items);
 
         return new PagedResult<GiocoDto>
         {
@@ -52,7 +47,7 @@ public class GiocoService : IGiocoService
 
     public async Task<Result<GiocoDto>> CreateAsync(CreaGiocoDto dto, CancellationToken cancellationToken = default)
     {
-        var gioco = _mapper.Map<Gioco>(dto);
+        Gioco gioco = _mapper.Map<Gioco>(dto);
         await _unitOfWork.Giochi.AddAsync(gioco, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
@@ -62,7 +57,7 @@ public class GiocoService : IGiocoService
 
     public async Task<Result<GiocoDto>> UpdateAsync(AggiornaGiocoDto dto, CancellationToken cancellationToken = default)
     {
-        var gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.Id, false, cancellationToken);
+        Gioco? gioco = await _unitOfWork.Giochi.GetByIdAsync(dto.Id, false, cancellationToken);
         if (gioco == null)
         {
             _logger.LogWarning("Aggiornamento fallito: Gioco con ID {GiocoId} non trovato.", dto.Id);
@@ -79,7 +74,7 @@ public class GiocoService : IGiocoService
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var gioco = await _unitOfWork.Giochi.GetByIdAsync(id, false, cancellationToken);
+        Gioco? gioco = await _unitOfWork.Giochi.GetByIdAsync(id, false, cancellationToken);
         if (gioco == null)
         {
             _logger.LogWarning("Cancellazione fallita: Gioco con ID {GiocoId} non trovato.", id);
@@ -95,7 +90,7 @@ public class GiocoService : IGiocoService
 
     public async Task<Result<bool>> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var exists = await _unitOfWork.Giochi.ExistsAsync(id, false, cancellationToken);
+        bool exists = await _unitOfWork.Giochi.ExistsAsync(id, false, cancellationToken);
         return exists;
     }
 }

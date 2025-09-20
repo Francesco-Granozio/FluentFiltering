@@ -1,5 +1,3 @@
-using GameStore.Application.Common;
-
 namespace GameStore.Application.Services;
 
 /// <summary>
@@ -15,17 +13,3 @@ public interface IStatisticheService
     Task<Result<StatisticheDto>> GetStatisticheAsync(CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// DTO per le statistiche del sistema
-/// </summary>
-public class StatisticheDto
-{
-    public int TotaleUtenti { get; set; }
-    public int TotaleGiochi { get; set; }
-    public int TotaleAcquisti { get; set; }
-    public int TotaleRecensioni { get; set; }
-    public decimal ValoreVendite { get; set; }
-    public double MediaPunteggioRecensioni { get; set; }
-    public int AcquistiUltimoMese { get; set; }
-    public int RecensioniUltimoMese { get; set; }
-}
