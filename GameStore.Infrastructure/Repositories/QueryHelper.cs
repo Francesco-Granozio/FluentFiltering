@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace GameStore.Infrastructure.Repositories;
 
 /// <summary>
@@ -55,7 +53,7 @@ public static class QueryHelper
         if (string.IsNullOrEmpty(value))
             return query;
 
-        return exactMatch 
+        return exactMatch
             ? query.Where(x => EF.Property<string>(x, propertyName) == value)
             : query.Where(x => EF.Property<string>(x, propertyName).Contains(value));
     }

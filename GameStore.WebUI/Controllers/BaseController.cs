@@ -81,14 +81,14 @@ public abstract class BaseController : ControllerBase
     /// <param name="cancellationToken">Token di cancellazione</param>
     /// <returns>BadRequest se la validazione fallisce, null se passa</returns>
     protected async Task<ActionResult?> ValidateAsync<T>(
-        IValidator<T> validator, 
-        T dto, 
+        IValidator<T> validator,
+        T dto,
         CancellationToken cancellationToken = default)
     {
-        var validationResult = await validator.ValidateAsync(dto, cancellationToken);
+        FluentValidation.Results.ValidationResult validationResult = await validator.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
         {
-            foreach (var error in validationResult.Errors)
+            foreach (FluentValidation.Results.ValidationFailure? error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }

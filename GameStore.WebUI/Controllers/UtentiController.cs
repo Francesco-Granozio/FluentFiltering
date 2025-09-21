@@ -67,7 +67,7 @@ public class UtentiController : BaseController
         CancellationToken cancellationToken = default)
     {
         // Validazione con FluentValidation
-        var validationResult = await ValidateAsync(_createValidator, dto, cancellationToken);
+        ActionResult? validationResult = await ValidateAsync(_createValidator, dto, cancellationToken);
         if (validationResult != null)
             return validationResult;
 
@@ -89,7 +89,7 @@ public class UtentiController : BaseController
         CancellationToken cancellationToken = default)
     {
         // Validazione con FluentValidation
-        var validationResult = await ValidateAsync(_updateValidator, dto, cancellationToken);
+        ActionResult? validationResult = await ValidateAsync(_updateValidator, dto, cancellationToken);
         if (validationResult != null)
             return validationResult;
 

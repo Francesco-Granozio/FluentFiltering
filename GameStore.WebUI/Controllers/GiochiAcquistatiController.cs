@@ -1,9 +1,3 @@
-using GameStore.Application.Services;
-using GameStore.Shared.Common;
-using GameStore.Shared.DTOs;
-using GameStore.Shared.DTOs.Common;
-using Microsoft.AspNetCore.Mvc;
-
 namespace GameStore.WebUI.Controllers;
 
 /// <summary>
@@ -31,7 +25,7 @@ public class GiochiAcquistatiController : BaseController
         [FromQuery] FilterRequest request,
         CancellationToken cancellationToken = default)
     {
-        var result = await _giochiAcquistatiService.GetPagedAsync(request, cancellationToken);
+        Result<PagedResult<GiochiAcquistatiDto>> result = await _giochiAcquistatiService.GetPagedAsync(request, cancellationToken);
         return HandleResult(result);
     }
 
@@ -44,7 +38,7 @@ public class GiochiAcquistatiController : BaseController
     public async Task<ActionResult<IEnumerable<GiochiAcquistatiDto>>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {
-        var result = await _giochiAcquistatiService.GetAllAsync(cancellationToken);
+        Result<IEnumerable<GiochiAcquistatiDto>> result = await _giochiAcquistatiService.GetAllAsync(cancellationToken);
         return HandleResult(result);
     }
 
@@ -61,7 +55,7 @@ public class GiochiAcquistatiController : BaseController
         [FromQuery] string? orderBy = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _giochiAcquistatiService.GetFilteredAsync(filter, orderBy, cancellationToken);
+        Result<IEnumerable<GiochiAcquistatiDto>> result = await _giochiAcquistatiService.GetFilteredAsync(filter, orderBy, cancellationToken);
         return HandleResult(result);
     }
 }

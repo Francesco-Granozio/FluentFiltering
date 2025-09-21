@@ -37,7 +37,7 @@ public class GiocoService : BaseService<Domain.Entities.Gioco, GiocoDto>, IGioco
         try
         {
             PagedResult<Gioco> pagedResult = await UnitOfWork.Giochi.GetPagedAsync(request, cancellationToken: cancellationToken);
-            var dtoResult = MapPagedResult(pagedResult);
+            PagedResult<GiocoDto> dtoResult = MapPagedResult(pagedResult);
 
             return Result<PagedResult<GiocoDto>>.Success(dtoResult);
         }

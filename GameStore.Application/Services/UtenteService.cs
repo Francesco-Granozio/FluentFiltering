@@ -36,7 +36,7 @@ public class UtenteService : BaseService<Domain.Entities.Utente, UtenteDto>, IUt
         try
         {
             PagedResult<Domain.Entities.Utente> pagedResult = await UnitOfWork.Utenti.GetPagedAsync(request, null, null, cancellationToken);
-            var dtoResult = MapPagedResult(pagedResult);
+            PagedResult<UtenteDto> dtoResult = MapPagedResult(pagedResult);
 
             return Result<PagedResult<UtenteDto>>.Success(dtoResult);
         }

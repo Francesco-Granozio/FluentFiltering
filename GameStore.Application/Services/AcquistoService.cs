@@ -45,7 +45,7 @@ public class AcquistoService : BaseService<Domain.Entities.Acquisto, AcquistoDto
                 includes: q => q.Include(a => a.Utente).Include(a => a.Gioco),
                 cancellationToken: cancellationToken);
 
-            var dtoResult = MapPagedResult(pagedResult);
+            PagedResult<AcquistoDto> dtoResult = MapPagedResult(pagedResult);
 
             return Result<PagedResult<AcquistoDto>>.Success(dtoResult);
         }

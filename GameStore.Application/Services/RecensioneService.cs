@@ -36,7 +36,7 @@ public class RecensioneService : BaseService<Domain.Entities.Recensione, Recensi
             includes: q => q.Include(r => r.Utente).Include(r => r.Gioco),
             cancellationToken: cancellationToken);
 
-        var dtoResult = MapPagedResult(pagedResult);
+        PagedResult<RecensioneDto> dtoResult = MapPagedResult(pagedResult);
 
         return Result<PagedResult<RecensioneDto>>.Success(dtoResult);
     }

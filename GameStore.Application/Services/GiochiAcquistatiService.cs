@@ -1,6 +1,3 @@
-using GameStore.Shared.Common;
-using GameStore.Shared.DTOs;
-using GameStore.Shared.DTOs.Common;
 using GameStore.Mapping;
 using Microsoft.Extensions.Logging;
 
@@ -16,8 +13,8 @@ public class GiochiAcquistatiService : IGiochiAcquistatiService
     private readonly ILogger<GiochiAcquistatiService> _logger;
 
     public GiochiAcquistatiService(
-        IUnitOfWork unitOfWork, 
-        IMappingService mappingService, 
+        IUnitOfWork unitOfWork,
+        IMappingService mappingService,
         ILogger<GiochiAcquistatiService> logger)
     {
         _unitOfWork = unitOfWork;
@@ -29,18 +26,18 @@ public class GiochiAcquistatiService : IGiochiAcquistatiService
     /// Ottiene i giochi acquistati paginati
     /// </summary>
     public async Task<Result<PagedResult<GiochiAcquistatiDto>>> GetPagedAsync(
-        FilterRequest request, 
+        FilterRequest request,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            _logger.LogInformation("Recupero giochi acquistati paginati. Pagina: {PageNumber}, Dimensione: {PageSize}", 
+            _logger.LogInformation("Recupero giochi acquistati paginati. Pagina: {PageNumber}, Dimensione: {PageSize}",
                 request.PageNumber, request.PageSize);
 
             PagedResult<GiochiAcquistatiDto> pagedResult = await _unitOfWork.GiochiAcquistati
                 .GetGiochiAcquistatiAsync(request, cancellationToken);
 
-            _logger.LogInformation("Recuperati {Count} giochi acquistati su {Total} totali", 
+            _logger.LogInformation("Recuperati {Count} giochi acquistati su {Total} totali",
                 pagedResult.Items.Count(), pagedResult.TotalItems);
 
             return Result<PagedResult<GiochiAcquistatiDto>>.Success(pagedResult);
@@ -48,7 +45,7 @@ public class GiochiAcquistatiService : IGiochiAcquistatiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Errore durante il recupero dei giochi acquistati paginati");
-            return Result<PagedResult<GiochiAcquistatiDto>>.Failure(ErrorType.UnexpectedError, 
+            return Result<PagedResult<GiochiAcquistatiDto>>.Failure(ErrorType.UnexpectedError,
                 "Errore durante il recupero dei giochi acquistati");
         }
     }
@@ -73,7 +70,7 @@ public class GiochiAcquistatiService : IGiochiAcquistatiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Errore durante il recupero di tutti i giochi acquistati");
-            return Result<IEnumerable<GiochiAcquistatiDto>>.Failure(ErrorType.UnexpectedError, 
+            return Result<IEnumerable<GiochiAcquistatiDto>>.Failure(ErrorType.UnexpectedError,
                 "Errore durante il recupero dei giochi acquistati");
         }
     }
@@ -88,7 +85,7 @@ public class GiochiAcquistatiService : IGiochiAcquistatiService
     {
         try
         {
-            _logger.LogInformation("Recupero giochi acquistati con filtro: '{Filter}', ordinamento: '{OrderBy}'", 
+            _logger.LogInformation("Recupero giochi acquistati con filtro: '{Filter}', ordinamento: '{OrderBy}'",
                 filter ?? "nessuno", orderBy ?? "default");
 
             IEnumerable<GiochiAcquistatiDto> giochiAcquistati = await _unitOfWork.GiochiAcquistati
@@ -101,7 +98,7 @@ public class GiochiAcquistatiService : IGiochiAcquistatiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Errore durante il recupero dei giochi acquistati filtrati");
-            return Result<IEnumerable<GiochiAcquistatiDto>>.Failure(ErrorType.UnexpectedError, 
+            return Result<IEnumerable<GiochiAcquistatiDto>>.Failure(ErrorType.UnexpectedError,
                 "Errore durante il recupero dei giochi acquistati filtrati");
         }
     }

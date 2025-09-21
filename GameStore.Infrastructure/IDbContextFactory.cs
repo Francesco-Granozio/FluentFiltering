@@ -1,4 +1,3 @@
-using GameStore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GameStore.Infrastructure;
@@ -30,7 +29,7 @@ public class DbContextFactory : IDbContextFactory
     public ApplicationDbContext CreateDbContext()
     {
         // Crea un nuovo scope per ogni DbContext
-        var scope = _serviceProvider.CreateScope();
+        IServiceScope scope = _serviceProvider.CreateScope();
         return scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
 }

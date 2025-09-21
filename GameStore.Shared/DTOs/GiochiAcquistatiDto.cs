@@ -48,7 +48,7 @@ public class GiochiAcquistatiDto
     /// <summary>
     /// Metodo di pagamento utilizzato
     /// </summary>
-    public string MetodoPagamento { get; set; } = string.Empty;
+    public string? MetodoPagamento { get; set; } = string.Empty;
 
     /// <summary>
     /// Codice sconto utilizzato (se applicabile)
@@ -68,7 +68,7 @@ public class GiochiAcquistatiDto
     /// <summary>
     /// Descrizione del gioco
     /// </summary>
-    public string GiocoDescrizione { get; set; } = string.Empty;
+    public string? GiocoDescrizione { get; set; } = string.Empty;
 
     /// <summary>
     /// Prezzo di listino del gioco
@@ -83,17 +83,17 @@ public class GiochiAcquistatiDto
     /// <summary>
     /// Genere del gioco
     /// </summary>
-    public string GiocoGenere { get; set; } = string.Empty;
+    public string? GiocoGenere { get; set; } = string.Empty;
 
     /// <summary>
     /// Piattaforma del gioco
     /// </summary>
-    public string GiocoPiattaforma { get; set; } = string.Empty;
+    public string? GiocoPiattaforma { get; set; } = string.Empty;
 
     /// <summary>
     /// Sviluppatore del gioco
     /// </summary>
-    public string GiocoSviluppatore { get; set; } = string.Empty;
+    public string? GiocoSviluppatore { get; set; } = string.Empty;
 
     /// <summary>
     /// Data di creazione dell'acquisto

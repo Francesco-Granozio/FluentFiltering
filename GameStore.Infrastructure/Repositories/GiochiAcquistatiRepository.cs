@@ -1,7 +1,4 @@
-using GameStore.Domain.Interfaces;
 using GameStore.Shared.DTOs;
-using GameStore.Shared.DTOs.Common;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 
 namespace GameStore.Infrastructure.Repositories;
@@ -22,10 +19,10 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
     /// Ottiene i giochi acquistati con informazioni dell'utente e del gioco (paginati)
     /// </summary>
     public async Task<Shared.DTOs.Common.PagedResult<GiochiAcquistatiDto>> GetGiochiAcquistatiAsync(
-        FilterRequest request, 
+        FilterRequest request,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildBaseQuery();
+        IQueryable<GiochiAcquistatiDto> query = BuildBaseQuery();
 
         // Applica filtro dinamico se presente
         query = ApplyFilter(query, request.Filter);
@@ -34,10 +31,10 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
         query = ApplyOrdering(query, request.OrderBy);
 
         // Conta il totale
-        var totalItems = await query.CountAsync(cancellationToken);
+        int totalItems = await query.CountAsync(cancellationToken);
 
         // Applica paginazione
-        var items = await query
+        List<GiochiAcquistatiDto> items = await query
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
@@ -57,7 +54,7 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
     public async Task<IEnumerable<GiochiAcquistatiDto>> GetAllGiochiAcquistatiAsync(
         CancellationToken cancellationToken = default)
     {
-        var query = BuildBaseQuery();
+        IQueryable<GiochiAcquistatiDto> query = BuildBaseQuery();
         query = ApplyOrdering(query, null);
 
         return await query.ToListAsync(cancellationToken);
@@ -71,7 +68,7 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
         string? orderBy = null,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildBaseQuery();
+        IQueryable<GiochiAcquistatiDto> query = BuildBaseQuery();
         query = ApplyFilter(query, filter);
         query = ApplyOrdering(query, orderBy);
 
@@ -119,7 +116,7 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
         if (string.IsNullOrEmpty(filter))
             return query;
 
-        return query.Where(x => 
+        return query.Where(x =>
             x.UtenteUsername.Contains(filter) ||
             x.UtenteEmail.Contains(filter) ||
             x.UtenteNomeCompleto.Contains(filter) ||

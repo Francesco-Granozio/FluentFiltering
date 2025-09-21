@@ -28,21 +28,21 @@ public class GiocoRepository : RepositoryGenerico<Gioco>, IGiocoRepository
 
     public async Task<IEnumerable<Gioco>> GetByGenereAsync(string genere, CancellationToken cancellationToken = default)
     {
-        var query = QueryHelper.CreateBaseQuery(_dbSet, false)
+        IQueryable<Gioco> query = QueryHelper.CreateBaseQuery(_dbSet, false)
                               .FilterByProperty("Genere", genere, exactMatch: true);
         return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Gioco>> GetByPiattaformaAsync(string piattaforma, CancellationToken cancellationToken = default)
     {
-        var query = QueryHelper.CreateBaseQuery(_dbSet, false)
+        IQueryable<Gioco> query = QueryHelper.CreateBaseQuery(_dbSet, false)
                               .FilterByProperty("Piattaforma", piattaforma, exactMatch: true);
         return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Gioco>> GetBySviluppatoreAsync(string sviluppatore, CancellationToken cancellationToken = default)
     {
-        var query = QueryHelper.CreateBaseQuery(_dbSet, false)
+        IQueryable<Gioco> query = QueryHelper.CreateBaseQuery(_dbSet, false)
                               .FilterByProperty("Sviluppatore", sviluppatore, exactMatch: true);
         return await query.ToListAsync(cancellationToken);
     }

@@ -1,6 +1,4 @@
 using GameStore.Mapping;
-using GameStore.Shared.Common;
-using GameStore.Shared.DTOs.Common;
 using Microsoft.Extensions.Logging;
 
 namespace GameStore.Application.Services;
@@ -32,8 +30,8 @@ public abstract class BaseService<TEntity, TDto>
     /// <returns>Risultato paginato dei DTO</returns>
     protected PagedResult<TDto> MapPagedResult(PagedResult<TEntity> pagedResult)
     {
-        var dtoList = MappingService.Map<TEntity, TDto>(pagedResult.Items);
-        
+        IEnumerable<TDto> dtoList = MappingService.Map<TEntity, TDto>(pagedResult.Items);
+
         return new PagedResult<TDto>
         {
             Items = dtoList,
@@ -54,13 +52,13 @@ public abstract class BaseService<TEntity, TDto>
     /// <returns>Result con errore</returns>
     protected Result<T> HandleException<T>(Exception ex, string operation, object? entityId = null)
     {
-        var entityTypeName = typeof(TEntity).Name;
-        var idMessage = entityId != null ? $" con ID {entityId}" : "";
-        
-        Logger.LogError(ex, "Errore durante {Operation} {EntityType}{IdMessage}", 
+        string entityTypeName = typeof(TEntity).Name;
+        string idMessage = entityId != null ? $" con ID {entityId}" : "";
+
+        Logger.LogError(ex, "Errore durante {Operation} {EntityType}{IdMessage}",
             operation, entityTypeName, idMessage);
-        
-        return Result<T>.Failure(ErrorType.UnexpectedError, 
+
+        return Result<T>.Failure(ErrorType.UnexpectedError,
             $"Errore durante {operation.ToLower()} {entityTypeName.ToLower()}");
     }
 
@@ -73,13 +71,13 @@ public abstract class BaseService<TEntity, TDto>
     /// <returns>Result con errore</returns>
     protected Result HandleException(Exception ex, string operation, object? entityId = null)
     {
-        var entityTypeName = typeof(TEntity).Name;
-        var idMessage = entityId != null ? $" con ID {entityId}" : "";
-        
-        Logger.LogError(ex, "Errore durante {Operation} {EntityType}{IdMessage}", 
+        string entityTypeName = typeof(TEntity).Name;
+        string idMessage = entityId != null ? $" con ID {entityId}" : "";
+
+        Logger.LogError(ex, "Errore durante {Operation} {EntityType}{IdMessage}",
             operation, entityTypeName, idMessage);
-        
-        return Result.Failure(ErrorType.UnexpectedError, 
+
+        return Result.Failure(ErrorType.UnexpectedError,
             $"Errore durante {operation.ToLower()} {entityTypeName.ToLower()}");
     }
 
@@ -90,8 +88,8 @@ public abstract class BaseService<TEntity, TDto>
     /// <param name="entityId">ID dell'entità</param>
     protected void LogSuccess(string operation, object entityId)
     {
-        var entityTypeName = typeof(TEntity).Name;
-        Logger.LogInformation("{Operation} {EntityType} con ID {EntityId} completato con successo", 
+        string entityTypeName = typeof(TEntity).Name;
+        Logger.LogInformation("{Operation} {EntityType} con ID {EntityId} completato con successo",
             operation, entityTypeName, entityId);
     }
 }

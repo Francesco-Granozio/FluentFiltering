@@ -4,6 +4,7 @@
 @using GameStore.Shared.DTOs.Common
 @using GameStore.Shared.Common
 @inject IGiochiAcquistatiService GiochiAcquistatiService
+@inject IChatService ChatService
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Giochi Acquistati - GameStore AI</PageTitle>
@@ -116,12 +117,20 @@
         <div class="chat-sidebar @(isChatOpen ? "chat-open" : "") @(isAwaitingResponse ? "awaiting-response" : "")">
             <div class="chat-header">
                 <div class="d-flex align-items-center">
-                    <i class="fas @(isAwaitingResponse ? "fa-spinner fa-spin" : "fa-robot") me-2 text-primary"></i>
+                    <i class="fas @(isAwaitingResponse ? "fa-spinner fa-spin" : "fa-robot") me-2 @(isAiServiceAvailable ? "text-primary" : "text-secondary")"></i>
                     <h6 class="mb-0">
                         GameStore AI Assistant
                         @if (isAwaitingResponse)
                         {
                             <span class="badge bg-primary ms-2">Pensando...</span>
+                        }
+                        else if (!isAiServiceAvailable)
+                        {
+                            <span class="badge bg-secondary ms-2">Offline</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success ms-2">Online</span>
                         }
                     </h6>
                 </div>
@@ -136,7 +145,16 @@
                         <i class="fas fa-robot"></i>
                     </div>
                     <div class="message-content">
-                        <p>Ciao! Sono l'assistente AI di GameStore. Come posso aiutarti ad analizzare i dati dei giochi acquistati?</p>
+                        <p>
+                            @if (isAiServiceAvailable)
+                            {
+                                <text>Ciao! Sono l'assistente AI di GameStore. Come posso aiutarti ad analizzare i dati dei giochi acquistati?</text>
+                            }
+                            else
+                            {
+                                <text>Ciao! Sono l'assistente AI di GameStore, ma al momento il servizio Ollama non è disponibile. Assicurati che Ollama sia in esecuzione con il modello gpt-oss:20b.</text>
+                            }
+                        </p>
                     </div>
                 </div>
                 
@@ -183,6 +201,7 @@
     // Chat variables
     private bool isChatOpen = false;
     private bool isAwaitingResponse = false;
+    private bool isAiServiceAvailable = false;
     private string currentMessage = string.Empty;
     private List<ChatMessage> chatMessages = new List<ChatMessage>();
     private ElementReference messageInput;
@@ -198,6 +217,20 @@
     protected override async Task OnInitializedAsync()
     {
         await CaricaDati();
+        await CheckAiServiceAvailability();
+    }
+
+    private async Task CheckAiServiceAvailability()
+    {
+        try
+        {
+            isAiServiceAvailable = await ChatService.IsAvailableAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking AI service availability: {ex.Message}");
+            isAiServiceAvailable = false;
+        }
     }
 
     private async Task CaricaDati()
@@ -305,6 +338,7 @@
         chatMessages.Add(userMessage);
 
         // Clear input and start awaiting response
+        var messageToSend = currentMessage;
         currentMessage = string.Empty;
         isAwaitingResponse = true;
         
@@ -312,17 +346,30 @@
         await ScrollToBottom();
         StateHasChanged();
 
-        // TODO: Here you will add AI response logic in the future
-        // For now, just add a placeholder response
-        await Task.Delay(2000); // Simulate AI processing time
-
-        var aiResponse = new ChatMessage
+        try
         {
-            Content = "Grazie per il tuo messaggio! Questa è una risposta di esempio. In futuro, l'AI analizzerà i dati e risponderà alle tue domande sui giochi acquistati.",
-            IsUser = false,
-            Timestamp = DateTime.Now
-        };
-        chatMessages.Add(aiResponse);
+            // Send message to AI with game data context
+            var aiResponse = await ChatService.SendMessageAsync(messageToSend, giochiAcquistati);
+            
+            var aiMessage = new ChatMessage
+            {
+                Content = aiResponse,
+                IsUser = false,
+                Timestamp = DateTime.Now
+            };
+            chatMessages.Add(aiMessage);
+        }
+        catch (Exception ex)
+        {
+            // Fallback response if AI service is not available
+            var errorMessage = new ChatMessage
+            {
+                Content = $"Mi dispiace, il servizio AI non è attualmente disponibile. Errore: {ex.Message}",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            };
+            chatMessages.Add(errorMessage);
+        }
 
         // Stop awaiting response
         isAwaitingResponse = false;

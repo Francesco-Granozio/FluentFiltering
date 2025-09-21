@@ -15,7 +15,7 @@ public interface IGiochiAcquistatiRepository
     /// <param name="cancellationToken">Token di cancellazione</param>
     /// <returns>Risultato paginato dei giochi acquistati</returns>
     Task<PagedResult<GiochiAcquistatiDto>> GetGiochiAcquistatiAsync(
-        FilterRequest request, 
+        FilterRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>

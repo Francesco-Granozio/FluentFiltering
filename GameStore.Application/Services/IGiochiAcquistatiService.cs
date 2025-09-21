@@ -1,7 +1,3 @@
-using GameStore.Shared.Common;
-using GameStore.Shared.DTOs;
-using GameStore.Shared.DTOs.Common;
-
 namespace GameStore.Application.Services;
 
 /// <summary>
@@ -16,7 +12,7 @@ public interface IGiochiAcquistatiService
     /// <param name="cancellationToken">Token di cancellazione</param>
     /// <returns>Risultato paginato dei giochi acquistati</returns>
     Task<Result<PagedResult<GiochiAcquistatiDto>>> GetPagedAsync(
-        FilterRequest request, 
+        FilterRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>
