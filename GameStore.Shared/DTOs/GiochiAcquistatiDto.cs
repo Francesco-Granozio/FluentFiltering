@@ -1,7 +1,7 @@
 namespace GameStore.Shared.DTOs;
 
 /// <summary>
-/// DTO per visualizzare i giochi acquistati con informazioni dell'utente e del gioco
+/// DTO per visualizzare i giochi acquistati con informazioni complete dell'utente, acquisto e gioco
 /// </summary>
 public class GiochiAcquistatiDto
 {
@@ -31,6 +31,31 @@ public class GiochiAcquistatiDto
     public string UtenteNomeCompleto { get; set; } = string.Empty;
 
     /// <summary>
+    /// Data dell'acquisto
+    /// </summary>
+    public DateTime DataAcquisto { get; set; }
+
+    /// <summary>
+    /// Prezzo pagato per l'acquisto
+    /// </summary>
+    public decimal PrezzoPagato { get; set; }
+
+    /// <summary>
+    /// Quantità acquistata
+    /// </summary>
+    public int Quantita { get; set; }
+
+    /// <summary>
+    /// Metodo di pagamento utilizzato
+    /// </summary>
+    public string MetodoPagamento { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Codice sconto utilizzato (se applicabile)
+    /// </summary>
+    public string CodiceSconto { get; set; } = string.Empty;
+
+    /// <summary>
     /// ID del gioco
     /// </summary>
     public Guid GiocoId { get; set; }
@@ -46,14 +71,29 @@ public class GiochiAcquistatiDto
     public string GiocoDescrizione { get; set; } = string.Empty;
 
     /// <summary>
-    /// Prezzo del gioco
+    /// Prezzo di listino del gioco
     /// </summary>
-    public decimal GiocoPrezzo { get; set; }
+    public decimal GiocoPrezzoListino { get; set; }
 
     /// <summary>
-    /// Data dell'acquisto
+    /// Data di rilascio del gioco
     /// </summary>
-    public DateTime DataAcquisto { get; set; }
+    public DateTime? GiocoDataRilascio { get; set; }
+
+    /// <summary>
+    /// Genere del gioco
+    /// </summary>
+    public string GiocoGenere { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Piattaforma del gioco
+    /// </summary>
+    public string GiocoPiattaforma { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Sviluppatore del gioco
+    /// </summary>
+    public string GiocoSviluppatore { get; set; } = string.Empty;
 
     /// <summary>
     /// Data di creazione dell'acquisto

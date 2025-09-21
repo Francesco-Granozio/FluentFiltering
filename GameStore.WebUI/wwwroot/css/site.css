@@ -522,3 +522,78 @@ h3 {
     background-color: var(--apple-gray-1) !important;
     border-bottom: 1px solid var(--apple-gray-2) !important;
 }
+
+/* RadzenPanelMenu Styles */
+.game-store-menu {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.game-store-menu .rz-panelmenu-item {
+    margin-bottom: 0.25rem !important;
+}
+
+.game-store-menu .rz-panelmenu-item-content {
+    background: transparent !important;
+    border: none !important;
+    border-radius: var(--apple-radius-small) !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.2s ease !important;
+    color: var(--apple-gray-7) !important;
+    font-weight: 500 !important;
+}
+
+.game-store-menu .rz-panelmenu-item-content:hover {
+    background-color: var(--apple-gray-1) !important;
+    color: var(--apple-blue) !important;
+    transform: translateX(4px) !important;
+}
+
+.game-store-menu .rz-panelmenu-item-content:focus {
+    background-color: var(--apple-gray-1) !important;
+    color: var(--apple-blue) !important;
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2) !important;
+    outline: none !important;
+}
+
+.game-store-menu .rz-panelmenu-item-content.rz-state-active {
+    background-color: var(--apple-blue) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.game-store-menu .rz-panelmenu-item-content.rz-state-active:hover {
+    background-color: var(--apple-blue-dark) !important;
+    color: white !important;
+    transform: none !important;
+}
+
+.game-store-menu .rz-panelmenu-item-icon {
+    color: inherit !important;
+    margin-right: 0.5rem !important;
+    font-size: 1.1rem !important;
+}
+
+.game-store-menu .rz-panelmenu-item-text {
+    color: inherit !important;
+    font-size: 0.95rem !important;
+}
+
+/* Remove default RadzenPanelMenu styling */
+.game-store-menu .rz-panelmenu {
+    background: transparent !important;
+    border: none !important;
+}
+
+.game-store-menu .rz-panelmenu .rz-panelmenu-item {
+    border: none !important;
+}
+
+.game-store-menu .rz-panelmenu .rz-panelmenu-item:first-child {
+    border-top: none !important;
+}
+
+.game-store-menu .rz-panelmenu .rz-panelmenu-item:last-child {
+    border-bottom: none !important;
+}

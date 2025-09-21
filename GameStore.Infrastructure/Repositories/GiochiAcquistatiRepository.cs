@@ -94,11 +94,19 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
                    UtenteUsername = utente.Username,
                    UtenteEmail = utente.Email,
                    UtenteNomeCompleto = utente.NomeCompleto,
+                   DataAcquisto = acquisto.DataAcquisto,
+                   PrezzoPagato = acquisto.PrezzoPagato,
+                   Quantita = acquisto.Quantita,
+                   MetodoPagamento = acquisto.MetodoPagamento,
+                   CodiceSconto = acquisto.CodiceSconto ?? string.Empty,
                    GiocoId = gioco.Id,
                    GiocoTitolo = gioco.Titolo,
                    GiocoDescrizione = gioco.Descrizione,
-                   GiocoPrezzo = gioco.PrezzoListino,
-                   DataAcquisto = acquisto.DataAcquisto,
+                   GiocoPrezzoListino = gioco.PrezzoListino,
+                   GiocoDataRilascio = gioco.DataRilascio,
+                   GiocoGenere = gioco.Genere,
+                   GiocoPiattaforma = gioco.Piattaforma,
+                   GiocoSviluppatore = gioco.Sviluppatore,
                    DataCreazione = acquisto.DataCreazione
                };
     }
@@ -115,8 +123,13 @@ public class GiochiAcquistatiRepository : IGiochiAcquistatiRepository
             x.UtenteUsername.Contains(filter) ||
             x.UtenteEmail.Contains(filter) ||
             x.UtenteNomeCompleto.Contains(filter) ||
+            x.MetodoPagamento.Contains(filter) ||
+            x.CodiceSconto.Contains(filter) ||
             x.GiocoTitolo.Contains(filter) ||
-            x.GiocoDescrizione.Contains(filter));
+            x.GiocoDescrizione.Contains(filter) ||
+            x.GiocoGenere.Contains(filter) ||
+            x.GiocoPiattaforma.Contains(filter) ||
+            x.GiocoSviluppatore.Contains(filter));
     }
 
     /// <summary>

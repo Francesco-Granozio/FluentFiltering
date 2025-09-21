@@ -62,25 +62,44 @@
 
                 <Columns>
                     <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteUsername" Title="Username" Width="120px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="180px" />
                     <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteNomeCompleto" Title="Nome Completo" Width="150px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="200px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Gioco" Width="200px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="300px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPrezzo" Title="Prezzo" Width="100px">
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px">
                         <Template>
-                            @context.GiocoPrezzo.ToString("C2")
+                            @context.DataAcquisto.ToString("dd/MM/yyyy")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="150px">
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px">
                         <Template>
-                            @context.DataAcquisto.ToString("dd/MM/yyyy HH:mm")
+                            @context.PrezzoPagato.ToString("C2")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataCreazione" Title="Data Creazione" Width="150px">
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="Quantita" Title="Quantità" Width="80px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="130px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px">
                         <Template>
-                            @context.DataCreazione.ToString("dd/MM/yyyy HH:mm")
+                            @(string.IsNullOrEmpty(context.CodiceSconto) ? "Nessuno" : context.CodiceSconto)
                         </Template>
                     </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Titolo Gioco" Width="180px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="250px">
+                        <Template>
+                            @(context.GiocoDescrizione?.Length > 50 ? context.GiocoDescrizione.Substring(0, 50) + "..." : context.GiocoDescrizione)
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPrezzoListino" Title="Prezzo Listino" Width="120px">
+                        <Template>
+                            @context.GiocoPrezzoListino.ToString("C2")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDataRilascio" Title="Data Rilascio" Width="120px">
+                        <Template>
+                            @(context.GiocoDataRilascio?.ToString("dd/MM/yyyy") ?? "N/A")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoGenere" Title="Genere" Width="120px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPiattaforma" Title="Piattaforma" Width="120px" />
+                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoSviluppatore" Title="Sviluppatore" Width="150px" />
                 </Columns>
             </RadzenDataGrid>
         </DynamicGridComponent>
@@ -129,6 +148,22 @@
             if (result.IsSuccess)
             {
                 giochiAcquistati = result.Value.Items.ToList();
+                
+                // Gestisce i valori null per il raggruppamento
+                foreach (var item in giochiAcquistati)
+                {
+                    if (string.IsNullOrEmpty(item.MetodoPagamento))
+                        item.MetodoPagamento = "Non specificato";
+                    if (string.IsNullOrEmpty(item.CodiceSconto))
+                        item.CodiceSconto = "Nessuno";
+                    if (string.IsNullOrEmpty(item.GiocoGenere))
+                        item.GiocoGenere = "Non specificato";
+                    if (string.IsNullOrEmpty(item.GiocoPiattaforma))
+                        item.GiocoPiattaforma = "Non specificato";
+                    if (string.IsNullOrEmpty(item.GiocoSviluppatore))
+                        item.GiocoSviluppatore = "Non specificato";
+                }
+                
                 Console.WriteLine($"Loaded {giochiAcquistati.Count()} purchased games for client-side filtering");
             }
             else
