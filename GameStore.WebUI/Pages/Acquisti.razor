@@ -51,6 +51,7 @@ else
                         AllowSorting="true"
                         AllowFiltering="true"
                         AllowFilteringByColumn="true"
+                        AllowGrouping="true"
                         FilterMode="FilterMode.Advanced"
                         PageSize="20"
                         PagerHorizontalAlign="HorizontalAlign.Left"
@@ -91,13 +92,13 @@ else
 
             <RadzenDataGridColumn TItem="AcquistoDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="150px" Filterable="true">
                 <Template Context="acquisto">
-                    <RadzenLabel Text="@acquisto.MetodoPagamento" />
+                    <RadzenLabel Text="@(string.IsNullOrEmpty(acquisto.MetodoPagamento) ? "Non specificato" : acquisto.MetodoPagamento)" />
                 </Template>
             </RadzenDataGridColumn>
 
             <RadzenDataGridColumn TItem="AcquistoDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px" Filterable="true">
                 <Template Context="acquisto">
-                    <RadzenLabel Text="@acquisto.CodiceSconto" />
+                    <RadzenLabel Text="@(string.IsNullOrEmpty(acquisto.CodiceSconto) ? "Nessuno" : acquisto.CodiceSconto)" />
                 </Template>
             </RadzenDataGridColumn>
 
@@ -180,6 +181,16 @@ else
             if (result.IsSuccess)
             {
                 acquisti = result.Value.Items.ToList();
+                
+                // Gestisce i valori null per il raggruppamento
+                foreach (var acquisto in acquisti)
+                {
+                    if (string.IsNullOrEmpty(acquisto.MetodoPagamento))
+                        acquisto.MetodoPagamento = "Non specificato";
+                    if (string.IsNullOrEmpty(acquisto.CodiceSconto))
+                        acquisto.CodiceSconto = "Nessuno";
+                }
+                
                 Console.WriteLine($"Loaded {acquisti.Count()} purchases for client-side filtering");
             }
             else
@@ -271,6 +282,7 @@ else
             _ => $"{property}.Contains(\"{filterValue}\")" // Default to Contains
         };
     }
+
 
     private void ModificaAcquisto(Guid id)
     {

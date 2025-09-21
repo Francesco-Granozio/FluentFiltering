@@ -39,6 +39,7 @@
                     AllowSorting="true"
                     AllowFiltering="true"
                     AllowFilteringByColumn="true"
+                    AllowGrouping="true"
                     FilterMode="FilterMode.Advanced"
                     PageSize="20"
                     PagerHorizontalAlign="HorizontalAlign.Left"
@@ -73,19 +74,19 @@
         
         <RadzenDataGridColumn TItem="GiocoDto" Property="Genere" Title="Genere" Width="120px" Filterable="true">
             <Template Context="gioco">
-                <RadzenLabel Text="@gioco.Genere" />
+                <RadzenLabel Text="@(string.IsNullOrEmpty(gioco.Genere) ? "Non specificato" : gioco.Genere)" />
             </Template>
         </RadzenDataGridColumn>
         
         <RadzenDataGridColumn TItem="GiocoDto" Property="Piattaforma" Title="Piattaforma" Width="120px" Filterable="true">
             <Template Context="gioco">
-                <RadzenLabel Text="@gioco.Piattaforma" />
+                <RadzenLabel Text="@(string.IsNullOrEmpty(gioco.Piattaforma) ? "Non specificato" : gioco.Piattaforma)" />
             </Template>
         </RadzenDataGridColumn>
         
         <RadzenDataGridColumn TItem="GiocoDto" Property="Sviluppatore" Title="Sviluppatore" Width="150px" Filterable="true">
             <Template Context="gioco">
-                <RadzenLabel Text="@gioco.Sviluppatore" />
+                <RadzenLabel Text="@(string.IsNullOrEmpty(gioco.Sviluppatore) ? "Non specificato" : gioco.Sviluppatore)" />
             </Template>
         </RadzenDataGridColumn>
         
@@ -145,6 +146,18 @@
             if (result.IsSuccess)
             {
                 giochi = result.Value.Items.ToList();
+                
+                // Gestisce i valori null per il raggruppamento
+                foreach (var gioco in giochi)
+                {
+                    if (string.IsNullOrEmpty(gioco.Genere))
+                        gioco.Genere = "Non specificato";
+                    if (string.IsNullOrEmpty(gioco.Piattaforma))
+                        gioco.Piattaforma = "Non specificato";
+                    if (string.IsNullOrEmpty(gioco.Sviluppatore))
+                        gioco.Sviluppatore = "Non specificato";
+                }
+                
                 errorMessage = null;
                 Console.WriteLine($"Loaded {giochi.Count()} games for client-side filtering");
             }
@@ -280,4 +293,5 @@
             _ => $"{property}.Contains(\"{filterValue}\")" // Default to Contains
         };
     }
+
 }

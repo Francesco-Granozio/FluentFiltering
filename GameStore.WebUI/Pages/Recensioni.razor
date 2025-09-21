@@ -39,6 +39,7 @@
                     AllowSorting="true"
                     AllowFiltering="true"
                     AllowFilteringByColumn="true"
+                    AllowGrouping="true"
                     FilterMode="FilterMode.Advanced"
                     PageSize="20"
                     PagerHorizontalAlign="HorizontalAlign.Left"
@@ -301,4 +302,5 @@
             _ => $"{property}.Contains(\"{filterValue}\")" // Default to Contains
         };
     }
+
 }

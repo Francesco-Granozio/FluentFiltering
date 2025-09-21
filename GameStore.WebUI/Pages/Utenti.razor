@@ -39,6 +39,7 @@
                     AllowSorting="true"
                     AllowFiltering="true"
                     AllowFilteringByColumn="true"
+                    AllowGrouping="true"
                     FilterMode="FilterMode.Advanced"
                     PageSize="20"
                     PagerHorizontalAlign="HorizontalAlign.Left"
@@ -67,7 +68,7 @@
         
         <RadzenDataGridColumn TItem="UtenteDto" Property="Paese" Title="Paese" Width="120px" Filterable="true">
             <Template Context="utente">
-                <RadzenLabel Text="@utente.Paese" />
+                <RadzenLabel Text="@(string.IsNullOrEmpty(utente.Paese) ? "Non specificato" : utente.Paese)" />
             </Template>
         </RadzenDataGridColumn>
         
@@ -133,6 +134,16 @@
             if (result.IsSuccess)
             {
                 utenti = result.Value.Items.ToList();
+                
+                // Gestisce i valori null per il raggruppamento
+                foreach (var utente in utenti)
+                {
+                    if (string.IsNullOrEmpty(utente.Paese))
+                    {
+                        utente.Paese = "Non specificato";
+                    }
+                }
+                
                 errorMessage = null;
                 Console.WriteLine($"Loaded {utenti.Count()} users for client-side filtering");
             }
@@ -197,6 +208,8 @@
             _ => $"{property} == \"{filterValue}\"" // default
         };
     }
+
+
 
     private void ModificaUtente(Guid id)
     {
