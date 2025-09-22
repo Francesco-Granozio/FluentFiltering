@@ -476,6 +476,42 @@
                         col.SecondFilterValue = v2;
                         col.LogicalFilterOperator = Radzen.LogicalFilterOperator.And;
                     }
+                    else if (string.Equals(f.FilterOperator, "In", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Supporta al massimo due valori in OR
+                        var (a, b) = SplitCsvToTwo(f.FilterValue);
+                        col.FilterOperator = Radzen.FilterOperator.Equals;
+                        col.FilterValue = ConvertFilterValue(a, propertyType);
+                        if (b != null)
+                        {
+                            col.SecondFilterOperator = Radzen.FilterOperator.Equals;
+                            col.SecondFilterValue = ConvertFilterValue(b, propertyType);
+                            col.LogicalFilterOperator = Radzen.LogicalFilterOperator.Or;
+                        }
+                    }
+                    else if (string.Equals(f.FilterOperator, "NotIn", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Supporta al massimo due valori in AND
+                        var (a, b) = SplitCsvToTwo(f.FilterValue);
+                        col.FilterOperator = Radzen.FilterOperator.NotEquals;
+                        col.FilterValue = ConvertFilterValue(a, propertyType);
+                        if (b != null)
+                        {
+                            col.SecondFilterOperator = Radzen.FilterOperator.NotEquals;
+                            col.SecondFilterValue = ConvertFilterValue(b, propertyType);
+                            col.LogicalFilterOperator = Radzen.LogicalFilterOperator.And;
+                        }
+                    }
+                    else if (string.Equals(f.FilterOperator, "IsEmpty", StringComparison.OrdinalIgnoreCase))
+                    {
+                        col.FilterOperator = Radzen.FilterOperator.IsEmpty;
+                        col.FilterValue = null;
+                    }
+                    else if (string.Equals(f.FilterOperator, "IsNotEmpty", StringComparison.OrdinalIgnoreCase))
+                    {
+                        col.FilterOperator = Radzen.FilterOperator.IsNotEmpty;
+                        col.FilterValue = null;
+                    }
                     else
                     {
                         col.FilterOperator = ParseOperator(f.FilterOperator);
@@ -512,14 +548,19 @@
             "equals" => Radzen.FilterOperator.Equals,
             "notequals" => Radzen.FilterOperator.NotEquals,
             "contains" => Radzen.FilterOperator.Contains,
+            "doesnotcontain" => Radzen.FilterOperator.DoesNotContain,
             "startswith" => Radzen.FilterOperator.StartsWith,
             "endswith" => Radzen.FilterOperator.EndsWith,
             "greaterthan" => Radzen.FilterOperator.GreaterThan,
             "greaterthanorequals" => Radzen.FilterOperator.GreaterThanOrEquals,
             "lessthan" => Radzen.FilterOperator.LessThan,
             "lessthanorequals" => Radzen.FilterOperator.LessThanOrEquals,
+            "in" => Radzen.FilterOperator.In,
+            "notin" => Radzen.FilterOperator.NotIn,
             "isnull" => Radzen.FilterOperator.IsNull,
             "isnotnull" => Radzen.FilterOperator.IsNotNull,
+            "isempty" => Radzen.FilterOperator.IsEmpty,
+            "isnotempty" => Radzen.FilterOperator.IsNotEmpty,
             _ => Radzen.FilterOperator.Contains
         };
     }
@@ -561,6 +602,34 @@
     private static object? ConvertFilterValue(object? value, Type targetType)
     {
         if (value == null) return null;
+        if (value is System.Text.Json.JsonElement je)
+        {
+            if (je.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                return ConvertFilterValue(je.GetString(), targetType);
+            }
+            if (je.ValueKind == System.Text.Json.JsonValueKind.Number)
+            {
+                // Prova double/decimal/int
+                if (targetType == typeof(int) || targetType == typeof(int?))
+                {
+                    if (je.TryGetInt32(out int i32)) return i32;
+                }
+                if (targetType == typeof(decimal) || targetType == typeof(decimal?))
+                {
+                    if (je.TryGetDecimal(out decimal dec)) return dec;
+                }
+                if (je.TryGetDouble(out double d)) return d;
+            }
+            if (je.ValueKind == System.Text.Json.JsonValueKind.True || je.ValueKind == System.Text.Json.JsonValueKind.False)
+            {
+                return je.GetBoolean();
+            }
+            if (je.ValueKind == System.Text.Json.JsonValueKind.Null)
+            {
+                return null;
+            }
+        }
         try
         {
             Type nonNullable = Nullable.GetUnderlyingType(targetType) ?? targetType;
@@ -576,6 +645,16 @@
         {
             return value;
         }
+    }
+
+    private static (string? a, string? b) SplitCsvToTwo(object? value)
+    {
+        if (value == null) return (null, null);
+        string s = value is string str ? str : Convert.ToString(value) ?? string.Empty;
+        var parts = s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string? a = parts.Length > 0 ? parts[0] : null;
+        string? b = parts.Length > 1 ? parts[1] : null;
+        return (a, b);
     }
 
     private RadzenDataGridColumn<GiochiAcquistatiDto>? GetColumnByProperty(string property)
