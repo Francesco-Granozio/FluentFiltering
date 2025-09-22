@@ -2,6 +2,7 @@
 @using GameStore.Application.Services
 @using GameStore.Shared.DTOs
 @using GameStore.Shared.DTOs.Common
+@using GameStore.Shared.Filters
 @using GameStore.Shared.Common
 @inject IGiochiAcquistatiService GiochiAcquistatiService
 @inject IChatService ChatService
@@ -69,45 +70,45 @@
                             Loading="@isLoading">
 
                 <Columns>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteUsername" Title="Username" Width="120px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="180px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="UtenteNomeCompleto" Title="Nome Completo" Width="150px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px">
+                    <RadzenDataGridColumn @ref="colUtenteUsername" TItem="GiochiAcquistatiDto" Property="UtenteUsername" Title="Username" Width="120px" />
+                    <RadzenDataGridColumn @ref="colUtenteEmail" TItem="GiochiAcquistatiDto" Property="UtenteEmail" Title="Email" Width="180px" />
+                    <RadzenDataGridColumn @ref="colUtenteNomeCompleto" TItem="GiochiAcquistatiDto" Property="UtenteNomeCompleto" Title="Nome Completo" Width="150px" />
+                    <RadzenDataGridColumn @ref="colDataAcquisto" TItem="GiochiAcquistatiDto" Property="DataAcquisto" Title="Data Acquisto" Width="120px">
                         <Template>
                             @context.DataAcquisto.ToString("dd/MM/yyyy")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px">
+                    <RadzenDataGridColumn @ref="colPrezzoPagato" TItem="GiochiAcquistatiDto" Property="PrezzoPagato" Title="Prezzo Pagato" Width="120px">
                         <Template>
                             @context.PrezzoPagato.ToString("C2")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="Quantita" Title="Quantità" Width="80px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="130px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px">
+                    <RadzenDataGridColumn @ref="colQuantita" TItem="GiochiAcquistatiDto" Property="Quantita" Title="Quantità" Width="80px" />
+                    <RadzenDataGridColumn @ref="colMetodoPagamento" TItem="GiochiAcquistatiDto" Property="MetodoPagamento" Title="Metodo Pagamento" Width="130px" />
+                    <RadzenDataGridColumn @ref="colCodiceSconto" TItem="GiochiAcquistatiDto" Property="CodiceSconto" Title="Codice Sconto" Width="120px">
                         <Template>
                             @(string.IsNullOrEmpty(context.CodiceSconto) ? "Nessuno" : context.CodiceSconto)
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Titolo Gioco" Width="180px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="250px">
+                    <RadzenDataGridColumn @ref="colGiocoTitolo" TItem="GiochiAcquistatiDto" Property="GiocoTitolo" Title="Titolo Gioco" Width="180px" />
+                    <RadzenDataGridColumn @ref="colGiocoDescrizione" TItem="GiochiAcquistatiDto" Property="GiocoDescrizione" Title="Descrizione" Width="250px">
                         <Template>
                             @(context.GiocoDescrizione?.Length > 50 ? context.GiocoDescrizione.Substring(0, 50) + "..." : context.GiocoDescrizione)
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPrezzoListino" Title="Prezzo Listino" Width="120px">
+                    <RadzenDataGridColumn @ref="colGiocoPrezzoListino" TItem="GiochiAcquistatiDto" Property="GiocoPrezzoListino" Title="Prezzo Listino" Width="120px">
                         <Template>
                             @context.GiocoPrezzoListino.ToString("C2")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoDataRilascio" Title="Data Rilascio" Width="120px">
+                    <RadzenDataGridColumn @ref="colGiocoDataRilascio" TItem="GiochiAcquistatiDto" Property="GiocoDataRilascio" Title="Data Rilascio" Width="120px">
                         <Template>
                             @(context.GiocoDataRilascio?.ToString("dd/MM/yyyy") ?? "N/A")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoGenere" Title="Genere" Width="120px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoPiattaforma" Title="Piattaforma" Width="120px" />
-                    <RadzenDataGridColumn TItem="GiochiAcquistatiDto" Property="GiocoSviluppatore" Title="Sviluppatore" Width="150px" />
+                    <RadzenDataGridColumn @ref="colGiocoGenere" TItem="GiochiAcquistatiDto" Property="GiocoGenere" Title="Genere" Width="120px" />
+                    <RadzenDataGridColumn @ref="colGiocoPiattaforma" TItem="GiochiAcquistatiDto" Property="GiocoPiattaforma" Title="Piattaforma" Width="120px" />
+                    <RadzenDataGridColumn @ref="colGiocoSviluppatore" TItem="GiochiAcquistatiDto" Property="GiocoSviluppatore" Title="Sviluppatore" Width="150px" />
                 </Columns>
             </RadzenDataGrid>
             </DynamicGridComponent>
@@ -197,6 +198,22 @@
     private string? errorMessage;
     private RadzenDataGrid<GiochiAcquistatiDto>? grid;
     private DynamicGridComponent? dynamicGrid;
+    // Column references
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colUtenteUsername;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colUtenteEmail;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colUtenteNomeCompleto;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colDataAcquisto;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colPrezzoPagato;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colQuantita;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colMetodoPagamento;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colCodiceSconto;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoTitolo;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoDescrizione;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoPrezzoListino;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoDataRilascio;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoGenere;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoPiattaforma;
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? colGiocoSviluppatore;
 
     // Chat variables
     private bool isChatOpen = false;
@@ -305,6 +322,7 @@
         if (grid != null)
         {
             grid.Reset(false, false);
+            ResetAllColumnFilters();
             await LoadInitialData();
         }
         StateHasChanged();
@@ -358,6 +376,9 @@
                 Timestamp = DateTime.Now
             };
             chatMessages.Add(aiMessage);
+
+            // Applica automaticamente i filtri Radzen (JSON) alla grid
+            ApplyRadzenFiltersFromAiJson(aiResponse);
         }
         catch (Exception ex)
         {
@@ -395,6 +416,188 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error scrolling chat: {ex.Message}");
+        }
+    }
+
+    // Applicazione filtri Radzen (array JSON di FilterDescriptor-like)
+    private class RadzenFilterDto
+    {
+        public string Property { get; set; } = string.Empty;
+        public string FilterOperator { get; set; } = string.Empty;
+        public object? FilterValue { get; set; }
+        public object? FilterValue2 { get; set; }
+        public string? Logical { get; set; } // And | Or (per combinare due filtri sulla stessa colonna)
+    }
+
+    private void ApplyRadzenFiltersFromAiJson(string aiResponse)
+    {
+        try
+        {
+            string raw = aiResponse.Trim();
+            int start = raw.IndexOf('[');
+            int end = raw.LastIndexOf(']');
+            if (start < 0 || end < 0 || end < start) return;
+            string json = raw.Substring(start, end - start + 1);
+
+            var filters = System.Text.Json.JsonSerializer.Deserialize<List<RadzenFilterDto>>(json, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if (filters == null || filters.Count == 0) return;
+
+            // Pulisci filtri esistenti
+            grid.Reset(false, false);
+
+            // Raggruppa per colonna per supportare fino a 2 filtri (Radzen)
+            foreach (var group in filters.GroupBy(x => x.Property))
+            {
+                var col = GetColumnByProperty(group.Key);
+                if (col == null) continue;
+                var propertyType = GetPropertyType(group.Key);
+                var list = group.ToList();
+
+                // Pulisci prima i filtri della colonna
+                col.FilterValue = null;
+                col.SecondFilterValue = null;
+                col.FilterOperator = Radzen.FilterOperator.Contains;
+                col.SecondFilterOperator = Radzen.FilterOperator.Contains;
+                col.LogicalFilterOperator = Radzen.LogicalFilterOperator.And;
+
+                if (list.Count == 1)
+                {
+                    var f = list[0];
+                    var v1 = ConvertFilterValue(f.FilterValue, propertyType);
+                    var v2 = ConvertFilterValue(f.FilterValue2, propertyType);
+                    if (string.Equals(f.FilterOperator, "Between", StringComparison.OrdinalIgnoreCase))
+                    {
+                        col.FilterOperator = Radzen.FilterOperator.GreaterThanOrEquals;
+                        col.SecondFilterOperator = Radzen.FilterOperator.LessThanOrEquals;
+                        col.FilterValue = v1;
+                        col.SecondFilterValue = v2;
+                        col.LogicalFilterOperator = Radzen.LogicalFilterOperator.And;
+                    }
+                    else
+                    {
+                        col.FilterOperator = ParseOperator(f.FilterOperator);
+                        col.FilterValue = v1;
+                    }
+                }
+                else
+                {
+                    // Usa i primi due filtri per la colonna
+                    var f1 = list[0];
+                    var f2 = list[1];
+                    var v1 = ConvertFilterValue(f1.FilterValue, propertyType);
+                    var v2 = ConvertFilterValue(f2.FilterValue, propertyType);
+                    col.FilterOperator = ParseOperator(f1.FilterOperator);
+                    col.FilterValue = v1;
+                    col.SecondFilterOperator = ParseOperator(f2.FilterOperator);
+                    col.SecondFilterValue = v2;
+                    var logical = (f2.Logical ?? f1.Logical)?.ToLowerInvariant();
+                    col.LogicalFilterOperator = logical == "or" ? Radzen.LogicalFilterOperator.Or : Radzen.LogicalFilterOperator.And;
+                }
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error applying Radzen filters: {ex.Message}");
+        }
+    }
+
+    private static Radzen.FilterOperator ParseOperator(string op)
+    {
+        return op?.ToLowerInvariant() switch
+        {
+            "equals" => Radzen.FilterOperator.Equals,
+            "notequals" => Radzen.FilterOperator.NotEquals,
+            "contains" => Radzen.FilterOperator.Contains,
+            "startswith" => Radzen.FilterOperator.StartsWith,
+            "endswith" => Radzen.FilterOperator.EndsWith,
+            "greaterthan" => Radzen.FilterOperator.GreaterThan,
+            "greaterthanorequals" => Radzen.FilterOperator.GreaterThanOrEquals,
+            "lessthan" => Radzen.FilterOperator.LessThan,
+            "lessthanorequals" => Radzen.FilterOperator.LessThanOrEquals,
+            "isnull" => Radzen.FilterOperator.IsNull,
+            "isnotnull" => Radzen.FilterOperator.IsNotNull,
+            _ => Radzen.FilterOperator.Contains
+        };
+    }
+
+    private void ResetAllColumnFilters()
+    {
+        void ResetCol(RadzenDataGridColumn<GiochiAcquistatiDto>? c)
+        {
+            if (c == null) return;
+            c.FilterValue = null;
+            c.SecondFilterValue = null;
+            c.FilterOperator = Radzen.FilterOperator.Contains;
+            c.SecondFilterOperator = Radzen.FilterOperator.Contains;
+            c.LogicalFilterOperator = Radzen.LogicalFilterOperator.And;
+        }
+
+        ResetCol(colUtenteUsername);
+        ResetCol(colUtenteEmail);
+        ResetCol(colUtenteNomeCompleto);
+        ResetCol(colDataAcquisto);
+        ResetCol(colPrezzoPagato);
+        ResetCol(colQuantita);
+        ResetCol(colMetodoPagamento);
+        ResetCol(colCodiceSconto);
+        ResetCol(colGiocoTitolo);
+        ResetCol(colGiocoDescrizione);
+        ResetCol(colGiocoPrezzoListino);
+        ResetCol(colGiocoDataRilascio);
+        ResetCol(colGiocoGenere);
+        ResetCol(colGiocoPiattaforma);
+        ResetCol(colGiocoSviluppatore);
+    }
+
+    private static Type GetPropertyType(string property)
+    {
+        return typeof(GiochiAcquistatiDto).GetProperty(property)?.PropertyType ?? typeof(string);
+    }
+
+    private static object? ConvertFilterValue(object? value, Type targetType)
+    {
+        if (value == null) return null;
+        try
+        {
+            Type nonNullable = Nullable.GetUnderlyingType(targetType) ?? targetType;
+            if (nonNullable == typeof(string)) return Convert.ToString(value);
+            if (nonNullable == typeof(Guid)) return value is Guid g ? g : Guid.Parse(Convert.ToString(value)!);
+            if (nonNullable == typeof(int)) return Convert.ToInt32(value);
+            if (nonNullable == typeof(decimal)) return Convert.ToDecimal(value, System.Globalization.CultureInfo.InvariantCulture);
+            if (nonNullable == typeof(DateTime)) return Convert.ToDateTime(value, System.Globalization.CultureInfo.InvariantCulture);
+            if (nonNullable == typeof(bool)) return Convert.ToBoolean(value);
+            return System.Convert.ChangeType(value, nonNullable);
+        }
+        catch
+        {
+            return value;
+        }
+    }
+
+    private RadzenDataGridColumn<GiochiAcquistatiDto>? GetColumnByProperty(string property)
+    {
+        switch (property)
+        {
+            case nameof(GiochiAcquistatiDto.UtenteUsername): return colUtenteUsername;
+            case nameof(GiochiAcquistatiDto.UtenteEmail): return colUtenteEmail;
+            case nameof(GiochiAcquistatiDto.UtenteNomeCompleto): return colUtenteNomeCompleto;
+            case nameof(GiochiAcquistatiDto.DataAcquisto): return colDataAcquisto;
+            case nameof(GiochiAcquistatiDto.PrezzoPagato): return colPrezzoPagato;
+            case nameof(GiochiAcquistatiDto.Quantita): return colQuantita;
+            case nameof(GiochiAcquistatiDto.MetodoPagamento): return colMetodoPagamento;
+            case nameof(GiochiAcquistatiDto.CodiceSconto): return colCodiceSconto;
+            case nameof(GiochiAcquistatiDto.GiocoTitolo): return colGiocoTitolo;
+            case nameof(GiochiAcquistatiDto.GiocoDescrizione): return colGiocoDescrizione;
+            case nameof(GiochiAcquistatiDto.GiocoPrezzoListino): return colGiocoPrezzoListino;
+            case nameof(GiochiAcquistatiDto.GiocoDataRilascio): return colGiocoDataRilascio;
+            case nameof(GiochiAcquistatiDto.GiocoGenere): return colGiocoGenere;
+            case nameof(GiochiAcquistatiDto.GiocoPiattaforma): return colGiocoPiattaforma;
+            case nameof(GiochiAcquistatiDto.GiocoSviluppatore): return colGiocoSviluppatore;
+            default: return null;
         }
     }
 

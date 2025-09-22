@@ -18,6 +18,25 @@ public class ChatService : IChatService
     private readonly string _ollamaUri;
     private readonly TimeSpan _requestTimeout;
     private readonly TimeSpan _connectionTimeout;
+    
+    // Memoria di sessione (non persistente): conserva una breve cronologia dei messaggi
+    private readonly List<(string Role, string Content)> _sessionHistory = new();
+
+    // Prompt di sistema fisso per guidare il modello (Radzen filters JSON)
+    private const string SystemPrompt =
+        "Sei \"GameStore Grid Filter Assistant\", un assistente AI per GameStore. Il tuo unico obiettivo è TRADURRE il prompt dell’utente in un elenco di filtri per Radzen DataGrid riferiti ai campi di GiochiAcquistatiDto. Rispondi sempre e solo con JSON valido, senza markdown, senza testo extra.\n\n" +
+        "DATI\n" +
+        "- La griglia mostra elementi di List<GiochiAcquistatiDto> giochi\n" +
+        "- Campi disponibili: AcquistoId (Guid), UtenteId (Guid), UtenteUsername (string), UtenteEmail (string), UtenteNomeCompleto (string), DataAcquisto (DateTime), PrezzoPagato (decimal), Quantita (int), MetodoPagamento (string?), CodiceSconto (string), GiocoId (Guid), GiocoTitolo (string), GiocoDescrizione (string?), GiocoPrezzoListino (decimal), GiocoDataRilascio (DateTime?), GiocoGenere (string?), GiocoPiattaforma (string?), GiocoSviluppatore (string?), DataCreazione (DateTime).\n\n" +
+        "OUTPUT\n" +
+        "- Produci un array JSON di filtri. Ogni filtro ha: Property (string), FilterOperator (string: Equals|NotEquals|Contains|StartsWith|EndsWith|GreaterThan|GreaterThanOrEquals|LessThan|LessThanOrEquals|IsNull|IsNotNull|In|Between), FilterValue (string|number|date|null), FilterValue2 (opzionale per Between), Logical (opzionale: And|Or per combinare due filtri sulla stessa colonna).\n" +
+        "- Esempio: [{\"Property\":\"GiocoTitolo\",\"FilterOperator\":\"Contains\",\"FilterValue\":\"Cuphead\"},{\"Property\":\"DataAcquisto\",\"FilterOperator\":\"GreaterThanOrEquals\",\"FilterValue\":\"2020-01-01\"}]\n" +
+        "- Tipi: usa numeri per int/decimal (es. 19.99), stringhe per testo, ISO 8601 per date (es. 2023-01-31 o 2023-01-31T00:00:00Z). Evita conversioni ambigue.\n" +
+        "- Per Between fornisci entrambi i valori. Per In fornisci CSV. Per combinare due condizioni sulla stessa colonna, usa due oggetti con stessa Property e Logical=And|Or.\n\n" +
+        "MEMORIA DI SESSIONE\n" +
+        "- Se l’utente chiede raffinamenti, restituisci l’elenco completo dei filtri aggiornato (non solo il delta).\n\n" +
+        "REGOLE\n" +
+        "- Niente markdown. Niente codice C#. Solo JSON array.\n";
 
     public ChatService(ILogger<ChatService> logger, IConfiguration configuration)
     {
@@ -130,6 +149,18 @@ public class ChatService : IChatService
 
             string fullResponse = response.ToString();
 
+            // Aggiorna memoria di sessione con la risposta del modello
+            if (!string.IsNullOrWhiteSpace(fullResponse))
+            {
+                _sessionHistory.Add(("assistant", fullResponse));
+                // Mantieni dimensione massima (es. 20 messaggi)
+                if (_sessionHistory.Count > 20)
+                {
+                    int removeCount = _sessionHistory.Count - 20;
+                    _sessionHistory.RemoveRange(0, removeCount);
+                }
+            }
+
             // Debug: mostra la risposta completa
             if (System.Diagnostics.Debugger.IsAttached)
             {
@@ -230,11 +261,20 @@ public class ChatService : IChatService
     {
         StringBuilder promptBuilder = new();
 
-        // System prompt
-        promptBuilder.AppendLine("Sei l'assistente AI di GameStore, un sistema di gestione di un negozio di videogiochi.");
-        promptBuilder.AppendLine("Il tuo compito è aiutare gli utenti ad analizzare e comprendere i dati dei giochi acquistati.");
-        promptBuilder.AppendLine("Rispondi sempre in italiano in modo chiaro e professionale.");
-        promptBuilder.AppendLine();
+        // Prompt di sistema fisso
+        promptBuilder.AppendLine(SystemPrompt);
+
+        // Memoria di sessione: riproduci una traccia sintetica dei turni precedenti
+        if (_sessionHistory.Count > 0)
+        {
+            promptBuilder.AppendLine("=== CONTESTO DI SESSIONE PRECEDENTE ===");
+            // Include solo le ultime 6 voci (3 turni user/assistant) per contenere la lunghezza
+            foreach (var (Role, Content) in _sessionHistory.TakeLast(6))
+            {
+                promptBuilder.AppendLine($"[{Role}]\n{Content}\n");
+            }
+            promptBuilder.AppendLine("=== FINE CONTESTO DI SESSIONE ===\n");
+        }
 
         // Contesto dei dati se disponibile
         if (context != null)
@@ -286,6 +326,9 @@ public class ChatService : IChatService
         {
             _logger.LogInformation($"Prompt costruito: {finalPrompt.Length} caratteri");
         }
+
+        // Aggiorna memoria di sessione con l'ultimo turno utente
+        _sessionHistory.Add(("user", message));
 
         return finalPrompt;
     }
