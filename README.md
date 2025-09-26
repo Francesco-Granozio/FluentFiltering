@@ -130,6 +130,24 @@ dotnet run --project GameStore.WebUI
 
 L'applicazione sarà disponibile su `https://localhost:7018`
 
+## 🖼️ Screenshots della Demo
+
+### 🏠 Dashboard Principale
+![Dashboard GameStore AI](DemoResources/main_menu.png)
+*Dashboard principale con statistiche del negozio e navigazione*
+
+### 👥 Gestione Utenti
+![Gestione Utenti](DemoResources/users.png)
+*Interfaccia per la gestione degli utenti con filtri avanzati*
+
+### 🎮 Modifica Giochi
+![Modifica Gioco](DemoResources/edit_game.png)
+*Form per la modifica dei dettagli dei giochi*
+
+### 🤖 Chat AI con Filtraggio Intelligente
+![Chat AI](DemoResources/chatting.png)
+*Funzionalità principale: chat AI per filtraggio intelligente dei dati*
+
 ## 📱 Come Usare la Demo
 
 ### 1. 🏠 Homepage

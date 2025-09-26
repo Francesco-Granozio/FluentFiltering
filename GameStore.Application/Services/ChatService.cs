@@ -255,6 +255,14 @@ public class ChatService : IChatService
     }
 
     /// <summary>
+    /// Ottiene il nome del modello AI attualmente configurato
+    /// </summary>
+    public string GetModelName()
+    {
+        return _modelName;
+    }
+
+    /// <summary>
     /// Costruisce il prompt con il contesto dei dati
     /// </summary>
     private string BuildPrompt(string message, object? context)

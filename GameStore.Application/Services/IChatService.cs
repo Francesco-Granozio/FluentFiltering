@@ -26,5 +26,11 @@ public interface IChatService
     /// </summary>
     /// <returns>True se il servizio è disponibile</returns>
     Task<bool> IsAvailableAsync();
+
+    /// <summary>
+    /// Ottiene il nome del modello AI attualmente configurato
+    /// </summary>
+    /// <returns>Nome del modello</returns>
+    string GetModelName();
 }
 
